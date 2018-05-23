@@ -1,0 +1,32 @@
+{
+  "name": "zxdom",
+  "version": "0.0.6",
+  "description": "A virtual-dom library",
+  "main": "dist/zxdom.js",
+  "module": "src/index.js",
+  "scripts": {
+    "clean": "rm dist/*.*",
+    "bundle": "rollup src/index.js -m -f umd -n zxdom -o dist/zxdom.js",
+    "minify": "uglifyjs dist/zxdom.js -o dist/zxdom.js -mc --safari10 --source-map includeSources,url=zxdom.js.map",
+    "build": "npm run clean && npm run bundle && npm run minify",
+    "test": "npm run bundle && ava test/keys.test.js"
+  },
+  "author": "Zacharias Enochsson",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zaceno/zxdom.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zaceno/zxdom/issues"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "ava": "^0.25.0",
+    "babel-plugin-transform-react-jsx": "^6.24.1",
+    "babel-preset-env": "^1.6.1",
+    "jsdom": "^11.10.0",
+    "parcel": "^1.8.1",
+    "rollup": "^0.58.2",
+    "uglify-es": "^3.3.9"
+  }
+}
