@@ -36,30 +36,24 @@ function getKeyOrTagOfVNode(vnode) {
 }
 
 function updateChildren(parentEl, oldChildren = [], newChildren = []) {
-    var n = 0
+    let n = 0
+    const chels = parentEl.childNodes
     while (n < oldChildren.length && n < newChildren.length) {
-        let newVNode = newChildren[n]
-        let o = getIndexOfVNode(oldChildren, getKeyOrTagOfVNode(newVNode), n)
-        let el = parentEl.childNodes[n]
+        let o = getIndexOfVNode(oldChildren, getKeyOrTagOfVNode(newChildren[n]), n)
         if (o == null) {
-            parentEl.insertBefore(make(newVNode), el)
+            parentEl.insertBefore(make(newChildren[n]), chels[n])
             oldChildren.splice(n, 0, null)
         } else {
-            let oldVNode = ((o != null) && oldChildren[o])
-            if (o == n) {
-                patch(el, oldVNode, newVNode)
-            } else {
-                //move element from old position to new position
-                let el2 =  parentEl.childNodes[o]
-                parentEl.insertBefore(el2, el)
+            if (o != n) {
+                parentEl.insertBefore(chels[o], chels[n])
                 oldChildren.splice(n, 0, oldChildren.splice(o, 1)[0]) //corresponding move in oldchildren
-                patch(el2, oldVNode, newVNode)
             }
+            patch(chels[n], oldChildren[n], newChildren[n])
         }
         n++
     }
     while (n < oldChildren.length) {
-        let el = parentEl.childNodes[n]
+        let el = chels[n]
         callOnRemove(el, oldChildren[n])
         parentEl.removeChild(el)
         oldChildren.splice(n, 1)
@@ -76,19 +70,6 @@ function setComponentInstance(oldnode, newnode) {
     else instances.splice(index, 1)
 }
 
-
-function sameNode(node1, node2) {
-    return (getKeyOrTagOfVNode(node1) === getKeyOrTagOfVNode(node2))
-}
-
-function updateNode(el, oldnode, newnode) {
-    updateAttr(el, oldnode.attr, newnode.attr)
-    updateChildren(el, oldnode.chld, newnode.chld)
-    if (newnode.attr && newnode.attr.onupdate) {
-        newnode.attr.onupdate(el)
-    }
-}
-
 export default function patch (el, oldnode, newnode) {
     if (oldnode.component) {
         if ( oldnode.component === newnode.component ) {
@@ -100,11 +81,12 @@ export default function patch (el, oldnode, newnode) {
             el = replace(el, newnode.vnode, oldnode.vnode)
         }
     } else if (oldnode.tag) {
-        //DOING A KEYCHECK HERE PROBABLY ONLY MAKES SENSE
-        //FOR TOP LEVEL NODES OF COMPONENTS. OTHERWISE,
-        //IT'S CHECKED IN CHILDREN SO PERHAPS DIFFERENTIATE. 
-        if (sameNode(oldnode, newnode)) {
-            updateNode(el, oldnode, newnode)
+        if (getKeyOrTagOfVNode(oldnode) === getKeyOrTagOfVNode(newnode)) {
+            updateAttr(el, oldnode.attr, newnode.attr)
+            updateChildren(el, oldnode.chld, newnode.chld)
+            if (newnode.attr && newnode.attr.onupdate) {
+                newnode.attr.onupdate(el)
+            }
         } else {
             el = replace(el, newnode, oldnode)
         }

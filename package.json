@@ -9,7 +9,7 @@
     "bundle": "rollup src/index.js -m -f umd -n zxdom -o dist/zxdom.js",
     "minify": "uglifyjs dist/zxdom.js -o dist/zxdom.js -mc --safari10 --source-map includeSources,url=zxdom.js.map",
     "build": "npm run clean && npm run bundle && npm run minify",
-    "test": "npm run bundle && ava test/keys.test.js"
+    "test": "npm run bundle && ava"
   },
   "author": "Zacharias Enochsson",
   "repository": {
