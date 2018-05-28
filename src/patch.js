@@ -1,6 +1,12 @@
 import updateAttr from './attr'
 import make from './make'
 
+//TODO: Look into maybe not letting h pass along components, but building up just a plain vnode tree. Should simplify diffing algo
+
+function insert(parent, el, index) {
+    parent.insertBefore(el, parent.childNodes[index])
+}
+
 function replace(el, vnode, oldnode) {
     const newel = make(vnode)
     const parent = el.parentNode
@@ -12,10 +18,10 @@ function replace(el, vnode, oldnode) {
 }
 
 function callOnRemove(el, oldnode) {
+    oldnode = oldnode.vnode || oldnode
     let {attr, chld} = oldnode
-    let chel = el.childNodes
     if (attr && attr.onremove) attr.onremove(el)
-    if (chld) chld.forEach((chnode, i) => callOnRemove(chel[i], chnode))
+    if (chld) chld.forEach((chnode, i) => callOnRemove(el.childNodes[i], chnode))
 } 
 
 function getIndexOfVNode(vnodes, keyOrTag, start = 0) {
@@ -31,6 +37,7 @@ function getIndexOfVNode(vnodes, keyOrTag, start = 0) {
 }
 
 function getKeyOrTagOfVNode(vnode) {
+    vnode = vnode.vnode || vnode
     if (vnode.attr && vnode.attr.key) return vnode.attr.key
     return vnode.tag
 }
@@ -40,26 +47,25 @@ function updateChildren(parentEl, oldChildren = [], newChildren = []) {
     const chels = parentEl.childNodes
     while (n < oldChildren.length && n < newChildren.length) {
         let o = getIndexOfVNode(oldChildren, getKeyOrTagOfVNode(newChildren[n]), n)
-        if (o == null) {
-            parentEl.insertBefore(make(newChildren[n]), chels[n])
+        if (o == null) { 
+            insert(parentEl, make(newChildren[n]), n)
             oldChildren.splice(n, 0, null)
         } else {
             if (o != n) {
-                parentEl.insertBefore(chels[o], chels[n])
-                oldChildren.splice(n, 0, oldChildren.splice(o, 1)[0]) //corresponding move in oldchildren
+                insert(parentEl, chels[o], n)
+                oldChildren.splice(n, 0, oldChildren.splice(o, 1)[0])
             }
             patch(chels[n], oldChildren[n], newChildren[n])
         }
         n++
     }
     while (n < oldChildren.length) {
-        let el = chels[n]
-        callOnRemove(el, oldChildren[n])
-        parentEl.removeChild(el)
+        callOnRemove(chels[n], oldChildren[n])
+        parentEl.removeChild(chels[n])
         oldChildren.splice(n, 1)
     }
     while (n < newChildren.length) {
-        parentEl.appendChild(make(newChildren[n++]))
+        insert(parentEl, make(newChildren[n++]), n)
     }
 }
 
@@ -78,7 +84,7 @@ export default function patch (el, oldnode, newnode) {
             newnode.el = el
         } else {
             setComponentInstance(oldnode) //remove the old component instance
-            el = replace(el, newnode.vnode, oldnode.vnode)
+            el = replace(el, newnode.vnode || newnode, oldnode.vnode)
         }
     } else if (oldnode.tag) {
         if (getKeyOrTagOfVNode(oldnode) === getKeyOrTagOfVNode(newnode)) {

@@ -4,13 +4,8 @@ import {JSDOM} from 'jsdom'
 const dom = new JSDOM('<html><head></head><body></body></html>')
 global.window = dom.window
 global.document = dom.window.document
+const despace = str =>  str.replace(/\n\s*/g, '')
 
-//test that attr can be given as null (because that's what jsx does)
-test('basic tag', t => {
-    t.deepEqual(h('div', null), {tag: 'div', attr: {}, chld: []})
-})
-
-//Test that updating a component multiple times leaves the instance count steady
 test('instance-count kept static over updates', t => {
     const container = document.createElement('main')
     const component = define(() => h('p'))
@@ -49,6 +44,64 @@ test('make sure old children and new children of component instances are separat
     update(component, {x: 'bar'})
     t.is(container.innerHTML, '<p>bar</p>')
 })
+
+
+test('replace a component with a regular tag as a child', t => {
+    t.plan(3)
+    const subcomponent = define(_ => h('p', {id: 'foo', onremove: el => {t.is(el.id, 'foo')}}, ['foo']))
+    const component = define(({step}) => h('div', {}, [
+       h(subcomponent),
+       h('p', {id: 'bar', oncreate: el => {t.is(el.id, 'bar')}}, ['bar'])
+    ][step]), {step: 0})
+    const container = document.createElement('main')
+    mount(component, container)
+    update(component, {step: 1})
+    t.is(container.innerHTML, '<div><p id="bar">bar</p></div>')
+})
+
+test('replace a component with a regular tag as root of component', t => {
+    t.plan(3)
+    const subcomponent = define(_ => h('p', {id: 'foo', onremove: el => {t.is(el.id, 'foo')}}, ['foo']))
+    const component = define(({step}) => [
+       h(subcomponent),
+       h('p', {id: 'bar', oncreate: el => {t.is(el.id, 'bar')}}, ['bar'])
+    ][step], {step: 0})
+    const container = document.createElement('main')
+    mount(component, container)
+    update(component, {step: 1})
+    t.is(container.innerHTML, '<p id="bar">bar</p>')
+})
+
+
+test('replace a component with a regular string as a child', t => {
+    t.plan(2)
+    const subcomponent = define(_ => h('p', {id: 'foo', onremove: el => {t.is(el.id, 'foo')}}, ['foo']))
+    const component = define(({step}) => h('div', {}, [
+       h(subcomponent),
+       'bop'
+    ][step]), {step: 0})
+    const container = document.createElement('main')
+    mount(component, container)
+    update(component, {step: 1})
+    t.is(container.innerHTML, '<div>bop</div>')
+})
+
+test('replace a component with a regular string as root of component', t => {
+    t.plan(2)
+    const subcomponent = define(_ => h('p', {id: 'foo', onremove: el => {t.is(el.id, 'foo')}}, ['foo']))
+    const component = define(({step}) => [
+       h(subcomponent),
+       'bop'
+    ][step], {step: 0})
+    const container = document.createElement('main')
+    mount(component, container)
+    update(component, {step: 1})
+    t.is(container.innerHTML, 'bop')
+})
+/*
+TODO: TEST WITH KEYED DYNAMIC COMPONENTS. THEY SHOULD BE REORDERED PROPERLY WITHOUT CALLS TO ONREMOVE/CREATE
+*/
+
 
 //SOMETHINGS wierd with checked. Possibly due to JSDOM. It works anyway, but not the test
 // test('checked is always set, even if it hasnt changed, because checked can change from user interaction', t => {
