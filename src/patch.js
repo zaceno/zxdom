@@ -88,7 +88,7 @@ export default function patch (el, oldnode, newnode) {
         }
     } else if (oldnode.tag) {
         if (newnode.component) {
-            el = replace(el, newnode.vnode, oldnode)
+            el = replace(el, newnode, oldnode)
         } else if (getKeyOrTagOfVNode(oldnode) === getKeyOrTagOfVNode(newnode)) {
             updateAttr(el, oldnode.attr, newnode.attr)
             updateChildren(el, oldnode.chld, newnode.chld)

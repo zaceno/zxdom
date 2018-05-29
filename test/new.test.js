@@ -127,8 +127,17 @@ test('replace a string with a component', t => {
     t.is(container.innerHTML, '<p id="foo">foo</p>')
 })
 
-
-
+/* TODO: components returned directly by other components, can be updated */
+test('components rendered by other component can be updated', t => {
+    const first = _ => h('p', {id: 'biz'}, ['biz'])
+    const inner = define(({val}) => h('p', {id: val}, [val]), {val: 'foo'})
+    const outer = define(({ready}) => (ready ? h(inner) : h(first)), {ready: false})
+    const container = document.createElement('main')
+    mount(h('div', {}, [ h(outer) ]), container)
+    update(outer, {ready: true})
+    update(inner, {val: 'bar'})
+    t.is(container.innerHTML, '<div><p id="bar">bar</p></div>')
+})
 
 
 /*
