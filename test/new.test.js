@@ -98,6 +98,39 @@ test('replace a component with a regular string as root of component', t => {
     update(component, {step: 1})
     t.is(container.innerHTML, 'bop')
 })
+
+test('replace a regular tag with a component', t => {
+    t.plan(4)
+    const subcomponent = define(_ => h('p', {id: 'foo', oncreate: el => t.is(el.id, 'foo')}, ['foo']))
+    const component = define(({step}) => [
+        h('p', {id: 'bar', onremove: el => t.is(el.id, 'bar')}, ['bar']),
+        h(subcomponent),
+    ][step], {step: 0})
+    const container = document.createElement('main')
+    mount(component, container)
+    t.is(container.innerHTML, '<p id="bar">bar</p>')
+    update(component, {step: 1})
+    t.is(container.innerHTML, '<p id="foo">foo</p>')
+})
+
+test('replace a string with a component', t => {
+    t.plan(3)
+    const subcomponent = define(_ => h('p', {id: 'foo', oncreate: el => t.is(el.id, 'foo')}, ['foo']))
+    const component = define(({step}) => [
+        'bar',
+        h(subcomponent),
+    ][step], {step: 0})
+    const container = document.createElement('main')
+    mount(component, container)
+    t.is(container.innerHTML, 'bar')
+    update(component, {step: 1})
+    t.is(container.innerHTML, '<p id="foo">foo</p>')
+})
+
+
+
+
+
 /*
 TODO: TEST WITH KEYED DYNAMIC COMPONENTS. THEY SHOULD BE REORDERED PROPERLY WITHOUT CALLS TO ONREMOVE/CREATE
 */

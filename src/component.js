@@ -12,6 +12,6 @@ export function define (func, initial = {}) {
 export function update (component, state={}) {
     component.state = state
     component.instances.forEach(inst => {
-        patch(inst.el, inst, h(component, Object.assign({}, inst.attr), inst.chld))
+        patch(inst.el, inst, h(component, inst.attr, inst.chld))
     })    
 }
