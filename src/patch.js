@@ -27,6 +27,7 @@ function callOnRemove(el, oldnode) {
 function getIndexOfVNode(vnodes, keyOrTag, start = 0) {
     for (let i = start; i < vnodes.length; i++) {
         let node = vnodes[i]
+        node = node.vnode || node
         if (node.attr && node.attr.key) {
             if (node.attr.key === keyOrTag) return i
             continue

@@ -140,6 +140,41 @@ test('components rendered by other component can be updated', t => {
 })
 
 
+test.only('components should not be recreated when updated', t => {
+    t.plan(2)
+    const inner = define(({step}) => h('p', {
+        oncreate: _ => t.is(step, 1),
+        onupdate: _ => t.is(step, 2)
+    }, ['inner']))
+    const outer = define(({step}) => h('div', {}, [
+        h('p', {}, ['extra']),
+        h(inner, {step}),
+        h('p', {}, ['extra']),
+    ]), {step: 1})
+    mount(outer, document.createElement('main'))
+    update(outer, {step: 2})
+})
+
+test.only('vnodes should be able to be null, empty string or false and be filtered out', t => {
+    t.plan(2)
+    const component = define(({step}) => h('div', {}, [
+        step === 1 && h('p', {}, ['0']),
+        '',
+        'foo',
+        0,
+        'foo',
+        null,
+        'foo',
+        undefined,
+        'foo',
+    ]), {step: 1})
+    const container = document.createElement('main')
+    mount(component, container)
+    t.is(container.innerHTML, '<div><p>0</p>foofoofoofoo</div>')
+    update(component, {step: 2})
+    t.is(container.innerHTML, '<div>foofoofoofoo</div>')
+})
+
 /*
 TODO: TEST WITH KEYED DYNAMIC COMPONENTS. THEY SHOULD BE REORDERED PROPERLY WITHOUT CALLS TO ONREMOVE/CREATE
 */
