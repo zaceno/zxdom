@@ -140,7 +140,7 @@ test('components rendered by other component can be updated', t => {
 })
 
 
-test.only('components should not be recreated when updated', t => {
+test('components should not be recreated when updated', t => {
     t.plan(2)
     const inner = define(({step}) => h('p', {
         oncreate: _ => t.is(step, 1),
@@ -155,13 +155,11 @@ test.only('components should not be recreated when updated', t => {
     update(outer, {step: 2})
 })
 
-test.only('vnodes should be able to be null, empty string or false and be filtered out', t => {
+test('vnodes should be able to be null, empty string or false and be filtered out', t => {
     t.plan(2)
     const component = define(({step}) => h('div', {}, [
-        step === 1 && h('p', {}, ['0']),
+        step === 1 && h('p', {}, [0]),
         '',
-        'foo',
-        0,
         'foo',
         null,
         'foo',
@@ -170,9 +168,9 @@ test.only('vnodes should be able to be null, empty string or false and be filter
     ]), {step: 1})
     const container = document.createElement('main')
     mount(component, container)
-    t.is(container.innerHTML, '<div><p>0</p>foofoofoofoo</div>')
+    t.is(container.innerHTML, '<div><p>0</p>foofoofoo</div>')
     update(component, {step: 2})
-    t.is(container.innerHTML, '<div>foofoofoofoo</div>')
+    t.is(container.innerHTML, '<div>foofoofoo</div>')
 })
 
 /*

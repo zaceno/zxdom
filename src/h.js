@@ -1,7 +1,7 @@
 
 export default function h(type, attr, ...chld) {
     attr = attr || {}
-    chld = [].concat(...[].concat(...chld)).filter(c => !!c) //flatten children into a single array
+    chld = [].concat(...[].concat(...chld)).filter(c => (c !== false && c != null)) //flatten children into a single array
     if (!!type.func) return {
         component: type,
         vnode: type.func(Object.assign({}, attr, type.state), chld),
