@@ -79,13 +79,15 @@ function setComponentInstance(oldnode, newnode) {
 
 export default function patch (el, oldnode, newnode) {
     if (oldnode.component) {
+        //we can't trust that oldnode.vnode is really truly the latest vnode for this instance. Look it up in the component instances list, by copmaring elements
+        const oldInstance = oldnode.component.instances.filter(i => i.el === el)[0]
         if ( oldnode.component === newnode.component ) {
-            setComponentInstance(oldnode, newnode)
-            el = patch(el, oldnode.vnode, newnode.vnode)
+            el = patch(el, oldInstance.vnode, newnode.vnode)
             newnode.el = el
+            setComponentInstance(oldInstance, newnode)
         } else {
-            setComponentInstance(oldnode) //remove the old component instance
-            el = replace(el, newnode.vnode || newnode, oldnode.vnode)
+            setComponentInstance(oldInstance) //remove the old component instance
+            el = replace(el, newnode.vnode || newnode, oldInstance.vnode)
         }
     } else if (oldnode.tag) {
         if (newnode.component) {

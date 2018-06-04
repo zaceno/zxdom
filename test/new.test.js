@@ -173,6 +173,37 @@ test('vnodes should be able to be null, empty string or false and be filtered ou
     t.is(container.innerHTML, '<div>foofoofoo</div>')
 })
 
+
+test('outer component updated after inner component updated, keeps new shape of inner', t => {
+    t.plan(3)
+    const inner = define(({step}) => [
+        h('ul', {}, [
+            h('li', {}, [ h('p', {}, 'foo')]),
+        ]),
+        h('ul', {}, [
+            h('li', {}, [ h('p', {}, 'bar')]),
+            h('li', {}, [ h('p', {}, 'baz')]),
+            h('li', {}, [ h('p', {}, 'bop')]),
+        ]),
+    ][step], {step: 0})
+    const outer = define(({step}) => h('div', {}, [
+        [
+            h('p', {id: 'fiz'}, ['fiz']),
+            h('p', {id: 'fob'}, ['fob']),
+        ][step],
+        h(inner),
+    ]), {step: 0})
+    const container = document.createElement('main')
+    mount(outer, container)
+    t.is(container.innerHTML, '<div><p id="fiz">fiz</p><ul><li><p>foo</p></li></ul></div>')
+    update(inner, {step: 1})
+    t.is(container.innerHTML, '<div><p id="fiz">fiz</p><ul><li><p>bar</p></li><li><p>baz</p></li><li><p>bop</p></li></ul></div>')
+    update(outer, {step: 1})
+    t.is(container.innerHTML, '<div><p id="fob">fob</p><ul><li><p>bar</p></li><li><p>baz</p></li><li><p>bop</p></li></ul></div>')
+})
+
+
+
 /*
 TODO: TEST WITH KEYED DYNAMIC COMPONENTS. THEY SHOULD BE REORDERED PROPERLY WITHOUT CALLS TO ONREMOVE/CREATE
 */
@@ -194,3 +225,5 @@ TODO: TEST WITH KEYED DYNAMIC COMPONENTS. THEY SHOULD BE REORDERED PROPERLY WITH
 
 //TODO: what about selected? in dropdown?
 //TODO: what about raidio buttons?
+
+//TOODO: make it possible to use class instances as views, so you can call update(this.view, this)
