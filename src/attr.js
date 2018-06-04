@@ -1,8 +1,8 @@
 
 function setAttr(el, name, oldval, val) {
-    if (name === 'key' || name === 'value' || name === 'selected' || name === 'checked' || name.substr(0,2) === 'on') {
+    if (name === 'key' || name === 'value' || name.substr(0,2) === 'on') {
         el[name] = val
-    } else if (val == null) {
+    } else if (val == null || val === false) {
         el.removeAttribute(name)
     } else if (oldval !== val) {
         el.setAttribute(name, val)
