@@ -22,7 +22,7 @@ function seekIndex(list, fn, start = 0) {
 
 
 function setAttribute(el, name, oldval, val) {
-    if (name === 'key' || name === 'value' || name.substr(0,2) === 'on') {
+    if (name === 'key' || name === 'value' || name === 'checked' || name.substr(0,2) === 'on') {
         el[name] = val
     } else if (val == null || val === false) {
         el.removeAttribute(name)
