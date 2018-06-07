@@ -1,0 +1,11 @@
+.toastList .toast {
+    width: 300px;
+    height: 20px;
+    padding: 15px;
+    line-height: 20px;
+    background: linear-gradient(to bottom, #ffffff 13%,#d6dfee 100%);
+    border-radius: 5px;
+    border: 1px #bec6d3 solid;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
+    margin: 5px;
+}

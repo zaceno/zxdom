@@ -1,18 +1,41 @@
 /*
-TODO add svg support back
+TODO: preventing removal in onremove lifecycle works in reverse to what it should.
+when right now, when a child-node's onremove returns true, that prevents us from
+properly removing a parent node which may not even have an onremove hook. 
 
-TODO add keys & lifecycle back
+Instead, we should do this: when we go to remove a node, we only respect the return value
+of onremoves from the top node. Children wo return true from their onremove calls are not preserved (they go when the parent goes)
+However, we still need to call their eventual onremove hooks.
 
-TODO refactor common patterns like "find index of thing in array", and perhaps others, to utility functions
+TODO: write tests for onremove-prevent-remove behavior
+
+TODO: write tests for making and mouting a plain component (not in a vtree)
+
+TODO: write tests for checkboxes, and boolean attrs (maybe done already?)
+
+TODO: write tests for svg support if possible.
 
 TODO refactor functions that will use less property-names, and also make the code more readable and descriptive what is being done.
 
 TODO refactor tests to be more descriptive of the api and less "incrementally built up"
-*/
 
+TODO: Optimize: textnodes are always inserted, then the old ones removed. If they're the same string we could leave them alone
 
-/* TODO: fix this so it handles boolean attrs properly (like disabled)
-    once it does, we can probably get away with not using props for any
+TODO: Optimize: If keyed nodes move down, we will instead move *up* every subsequent nodes one step. COuld be optimized
+by just building a list of moves, and notice that a series of up-moves of one, could be replaced by a single
+down move (maybe?)
+
+TODO: Port hyperapp-transitions to work with this lib. Look into including as an optional (tree-shakeabke) module
+
+TODO: More better examples
+
+TODO: Prettier example-pages
+
+TODO: Docs. Pitch, Getting Started, In depth walkthrough (including live runnable examples),  Introduce the Examples, API docs. Use the docs folder so github makes a website for it.
+
+TODO: SVG Logo & fancy splash pages
+
+TODO: Setup Stefan Krauses benchmark and see where we're at
 */
 
 
@@ -41,22 +64,30 @@ function updateAttributes (el, oldattr, newattr) {
 }
 
 function willRemove(el, oldvnode) {
+    let prevent = false
     if (oldvnode.type) {
         const {type, attributes, children} = oldvnode
         if (type.func) {
             const inst = getInstanceIndex(type, el)
-            willRemove(el, type.instances[inst].vnode)
+            prevent = willRemove(el, type.instances[inst].vnode)
             type.instances.splice(inst, 1)
         } else {
-            children.forEach((chvnode, i) => willRemove(el.childNodes[i], chvnode))
-            attributes.onremove && attributes.onremove(el)
+            prevent = children.map((chvnode, i) => willRemove(el.childNodes[i], chvnode)).reduce((a, b) => (a || b), false)
+            if (!prevent && attributes.onremove) { prevent = attributes.onremove(el) }
         }    
     }
+    return prevent
 }
 
 function remove(el, oldvnode) {
-    willRemove(el, oldvnode)
-    el.parentNode && el.parentNode.removeChild(el)
+    const prevent = willRemove(el, oldvnode)
+    console.log('PREVENT IS', prevent,)
+    if (el.parentNode && !prevent) {
+        console.log('REMVING!')
+        el.parentNode.removeChild(el)
+    } else {
+        console.log('NOT REMOVINT')
+    }
 }
 
 function getKey (node) {
@@ -74,18 +105,6 @@ function morphInstance (oldel, view, attributes, children) {
     return el
 }
 
-
-/*
-
-OPTIMIZE:
-
-textnodes are always inserted, then the old ones removed. If they're the same string we could leave them alone
-
-If keyed nodes move down, we will instead move *up* every subsequent nodes one step. COuld be optimized
-by just building a list of moves, and notice that a series of up-moves of one, could be replaced by a single
-down move (maybe?)
-
-*/
 
 function seekId(node) {
     return node.type ? (node.attributes.key || node.type) : node
@@ -133,9 +152,12 @@ function morph (el, oldvnode, {type, attributes, children}) {
 }
 
 function replace (el, oldvnode, newvnode) {
-    willRemove(el, oldvnode)
+    const prevent = willRemove(el, oldvnode)
     const newel = make(newvnode)
-    el.parentNode && el.parentNode.replaceChild(newel, el)
+    if (el.parentNode) {
+        if (prevent) el.parentNode.insertBefore(newel, el)
+        else el.parentNode.replaceChild(newel, el)
+    }
     return newel
 }
 
@@ -167,7 +189,7 @@ function makeNode ({type, attributes={}, children=[]}, svg=false) {
 }
 
 function make (vnode, svg) {
-    return vnode.type ? makeNode(vnode, svg) : document.createTextNode(vnode)
+    return vnode.func ? make(h(vnode)) : vnode.type ? makeNode(vnode, svg) : document.createTextNode(vnode)
 }
 
 function h (type, attributes, ...children) {
@@ -181,7 +203,7 @@ function define (func, data) {
 }
 
 function mount (vnode, container) {
-    const el = make(vnode.func ? h(vnode) : vnode)
+    const el = make(vnode)
     container.innerHTML = ''
     container.appendChild(el)
 }
