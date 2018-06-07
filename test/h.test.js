@@ -2,12 +2,12 @@ import test from 'ava'
 import {define, h} from '../dist/zxdom'
 
 test('basic tag', t => {
-    t.deepEqual(h('div'), {tag: 'div', attr: {}, chld: []})    
+    t.deepEqual(h('div'), {type: 'div', attributes: {}, children: []})    
 })
 test('tag with props', t => {
     t.deepEqual(
         h('div', {id: 'foo'}),
-        {tag: 'div', attr: {id: 'foo'}, chld: []}
+        {type: 'div', attributes: {id: 'foo'}, children: []}
     )
 })
 
@@ -20,13 +20,13 @@ test('tag with children', t => {
             h('p', {}, 'baz')
         ]),
         {
-            tag: 'div',
-            attr: {id: 'foo'},
-            chld: [
+            type: 'div',
+            attributes: {id: 'foo'},
+            children: [
                 'aaa',
-                {tag: 'p', attr: {}, chld: ['bar']},
+                {type: 'p', attributes: {}, children: ['bar']},
                 'bbb',
-                {tag: 'p', attr: {}, chld: ['baz']}
+                {type: 'p', attributes: {}, children: ['baz']}
             ]
         }
     ) 
@@ -46,9 +46,9 @@ test('functional component', t => {
     t.deepEqual(
         h(component, {x: 'foo'}, 'xxx', 'yyy'),
         {
-            tag: 'div',
-            attr: {x: 'foo'},
-            chld: ['foo', 'xxx', 'yyy', 'bar']
+            type: 'div',
+            attributes: {x: 'foo'},
+            children: ['foo', 'xxx', 'yyy', 'bar']
         }
     )
 })

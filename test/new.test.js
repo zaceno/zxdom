@@ -33,9 +33,9 @@ test('value is always set, even if it hasnt changed, because value can be set fr
 test('make sure old children and new children of component instances are separate instances', t => {
     const component = define(({x}, children) => {
         return {
-            tag: children[0].tag,
-            attr: children[0].attr,
-            chld: [x]
+            type: children[0].type,
+            attributes: children[0].attributes,
+            children: [x]
         }
     }, {x: 'foo'})
     const container = document.createElement('main')
