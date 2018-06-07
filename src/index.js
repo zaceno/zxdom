@@ -170,7 +170,8 @@ function make (vnode, svg) {
     return vnode.type ? makeNode(vnode, svg) : document.createTextNode(vnode)
 }
 
-function h (type, attributes = {}, ...children) {
+function h (type, attributes, ...children) {
+    attributes = attributes || {}
     children = [].concat(...[].concat(...children)).filter(c => (c !== false && c != null))
     return (typeof type === 'function') ? type(attributes, children) : {type, attributes, children}
 }
