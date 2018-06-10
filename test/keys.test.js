@@ -176,7 +176,7 @@ test('keys reorder properly among unkeyed with addition', t => {
 })
 
 
-test('keys reorder properly among unkeyed with removal', t => {
+test.only('keys reorder properly among unkeyed with removal', t => {
     const keyed = ({key}) => h('p', {
         key: key,
         oncreate: el => {el.id = key},

@@ -1,2 +1,223 @@
-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports):"function"==typeof define&&define.amd?define(["exports"],t):t(e.zxdom={})}(this,function(e){"use strict";function t(e,t,n=0){return e.reduce((e,c,i)=>i<n||e>-1||!t(c)?e:i,-1)}function n(e,t,n,c){"key"===t||"value"===t||"checked"===t||"on"===t.substr(0,2)?e[t]=c:null==c||!1===c?e.removeAttribute(t):n!==c&&e.setAttribute(t,c)}function c(e,t,c){Object.keys(t).forEach(t=>{null==c[t]&&n(e,t)}),Object.keys(c).forEach(i=>{n(e,i,t[i],c[i])})}function i(e,t){if(t.type){const{type:n,attributes:c,children:r}=t;if(n.func){const t=l(n,e);i(e,n.instances[t].vnode),n.instances.splice(t,1)}else r.forEach((t,n)=>i(e.childNodes[n],t)),c.onremove&&c.onremove(e)}}function r(e){const t=e.attributes;return t&&t.key?t.key:null}function o(e,t,n,c){const i=t.func(Object.assign({},n,t.data),c),o=l(t,e),u=t.instances[o].vnode,s=(r(u)===r(i)?f:d)(e,u,i);return t.instances.splice(o,1,{el:s,vnode:i,attributes:n,children:c}),s}function u(e){return e.type?e.attributes.key||e.type:e}function s(e,n,c){const i=u(n);return t(e,e=>u(e)===i,c)}function a(e,t,n,r,o){return c(e,t,r),function(e,t,n){let c=0;for(;c<t.length&&c<n.length;){let i=s(t,n[c],c);i<0?(e.insertBefore(h(n[c]),e.childNodes[c]),t.splice(c,0,"")):(i!=c&&(e.insertBefore(e.childNodes[i],e.childNodes[c]),t.splice(c,0,t.splice(i,1)[0])),f(e.childNodes[c],t[c],n[c])),c++}for(;c<t.length;)r=e.childNodes[c],o=t[c],i(r,o),r.parentNode&&r.parentNode.removeChild(r),t.splice(c,1);for(var r,o;c<n.length;)e.appendChild(h(n[c++]))}(e,n,o),r.onupdate&&r.onupdate(e),e}function d(e,t,n){i(e,t);const c=h(n);return e.parentNode&&e.parentNode.replaceChild(c,e),c}function f(e,t,n){return(t.type&&t.type===n.type?function(e,t,{type:n,attributes:c,children:i}){return n.func?o(e,n,c,i):a(e,t.attributes,t.children,c,i)}:d)(e,t,n)}function l(e,n){return t(e.instances,e=>e.el===n)}function p({type:e,attributes:t={},children:n=[]},i=!1){if(e.func)return function(e,t,n){const c=e.func(Object.assign({},t,e.data),n),i=h(c);return e.instances=e.instances||[],e.instances.push({el:i,vnode:c,attributes:t,children:n}),i}(e,t,n);const r=(i=i||"svg"===e)?document.createElementNS("http://www.w3.org/2000/svg",e):document.createElement(e);return c(r,{},t),n.forEach(e=>r.appendChild(h(e,i))),t.oncreate&&t.oncreate(r),r}function h(e,t){return e.type?p(e,t):document.createTextNode(e)}function y(e,t,...n){return t=t||{},n=[].concat(...[].concat(...n)).filter(e=>!1!==e&&null!=e),"function"==typeof e?e(t,n):{type:e,attributes:t,children:n}}e.h=y,e.patch=f,e.make=h,e.mount=function(e,t){const n=h(e.func?y(e):e);t.innerHTML="",t.appendChild(n)},e.define=function(e,t){return{func:e,data:t}},e.update=function(e,t){e.data=t,e.instances=e.instances||[],e.instances.forEach(t=>o(t.el,e,t.attributes,t.children))},Object.defineProperty(e,"__esModule",{value:!0})});
+(function (global, factory) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+    typeof define === 'function' && define.amd ? define(['exports'], factory) :
+    (factory((global.zxdom = {})));
+}(this, (function (exports) { 'use strict';
+
+    /*
+
+    TODO: write tests for onremove-prevent-remove behavior
+    when we go to remove a node, we only respect the return value
+    of onremoves from the top node. Children wo return true from their onremove calls are not preserved (they go when the parent goes)
+    However, we still need to call their eventual onremove hooks.
+
+    TODO: write tests for checkboxes, and boolean attrs (maybe done already?)
+
+    TODO: write tests for svg support if possible.
+
+    TODO refactor functions that will use less property-names, and also make the code more readable and descriptive what is being done.
+
+    TODO refactor tests to be more descriptive of the api and less "incrementally built up"
+
+    TODO: Optimize: textnodes are always inserted, then the old ones removed. If they're the same string we could leave them alone
+
+    TODO: Optimize: If keyed nodes move down, we will instead move *up* every subsequent nodes one step. COuld be optimized
+    by just building a list of moves, and notice that a series of up-moves of one, could be replaced by a single
+    down move (maybe?)
+
+    TODO: transitions included as an optional (tree-shakeabke) module
+
+    TODO: Example with forms and validation Something with forms and validations
+
+    TODO: Prettier example-pages
+
+    TODO: Docs. Pitch, Getting Started, In depth walkthrough (including live runnable examples),  Introduce the Examples, API docs. Use the docs folder so github makes a website for it.
+
+    TODO: SVG Logo & fancy splash pages
+
+    TODO: Setup Stefan Krauses benchmark and see where we're at
+    */
+
+
+    function seekIndex(list, fn, start = 0) {
+        return list.reduce((found, item, index) => (index < start || found > -1 || !fn(item)) ? found : index, -1)
+    }
+
+
+    function setAttribute(el, name, oldval, val) {
+        if (name === 'key' || name === 'value' || name === 'checked' || name.substr(0,2) === 'on') {
+            el[name] = val;
+        } else if (val == null || val === false) {
+            el.removeAttribute(name);
+        } else if (oldval !== val) {
+            el.setAttribute(name, val);
+        }
+    }
+
+    function updateAttributes (el, oldattr, newattr) {
+        Object.keys(oldattr).forEach(name => {
+            if (newattr[name] == null) setAttribute(el, name);
+        });
+        Object.keys(newattr).forEach(name => {
+            setAttribute(el, name, oldattr[name], newattr[name]);
+        });
+    }
+
+    function willRemove(el, oldvnode) {
+        let prevent = false;
+        if (oldvnode.type) {
+            const {type, attributes, children} = oldvnode;
+            if (type.func) {
+                const inst = getInstanceIndex(type, el);
+                prevent = willRemove(el, type.instances[inst].vnode);
+                type.instances.splice(inst, 1);
+            } else {
+                children.map((chvnode, i) => willRemove(el.childNodes[i], chvnode));
+                if (attributes.onremove) { prevent = attributes.onremove(el); }
+            }    
+        }
+        return prevent
+    }
+
+    function remove(el, oldvnode) {
+        if (willRemove(el, oldvnode)) return false
+        el.parentNode && el.parentNode.removeChild(el);
+        return true
+    }
+
+    function replace (el, oldvnode, newvnode) {
+        const prevent = willRemove(el, oldvnode);
+        const newel = make(newvnode);
+        if (el.parentNode) {
+            if (prevent) el.parentNode.insertBefore(newel, el);
+            else el.parentNode.replaceChild(newel, el);
+        }
+        return newel
+    }
+
+    function getKey (node) {
+        const attr = node.attributes;
+        return (attr && attr.key) ? attr.key : null 
+    }
+
+
+    function morphInstance (oldel, view, attributes, children) {
+        const vnode = view.func(Object.assign({}, attributes, view.data), children);
+        const inst = getInstanceIndex(view, oldel);
+        const oldvnode = view.instances[inst].vnode;
+        const el = (getKey(oldvnode) === getKey(vnode) ? patch : replace)(oldel, oldvnode, vnode);
+        view.instances.splice(inst, 1, {el, vnode, attributes, children});
+        return el
+    }
+
+
+    function seekId(node) {
+        return node.type ? (node.attributes.key || node.type) : node
+    }
+
+    function seekNode(list, node, start) {
+        const sought = seekId(node);
+        return seekIndex(list, item => (seekId(item) === sought), start)
+    }
+
+    function patchChildren(parent, oldch, newch) {
+        let n = 0;
+        while (n < oldch.length && n < newch.length) {
+            let o = seekNode(oldch, newch[n], n);
+            if (o < 0) {
+                parent.insertBefore(make(newch[n]), parent.childNodes[n]);
+                oldch.splice(n, 0, '');
+            } else {
+                if (o != n) {
+                    parent.insertBefore(parent.childNodes[o], parent.childNodes[n]);
+                    oldch.splice(n, 0, oldch.splice(o, 1)[0]);
+                }
+                patch(parent.childNodes[n], oldch[n], newch[n]);
+            }
+            n++;
+        }
+        while (n < oldch.length) {
+            const didRemove = remove(parent.childNodes[n], oldch[n]);
+            if (!didRemove) n++;
+        }
+        while (n < newch.length)  parent.appendChild(make(newch[n++]));
+    }
+
+
+    function morphVNode(el, oldattr, oldch, newattr, newch) {
+        updateAttributes(el, oldattr, newattr);
+        patchChildren(el, oldch, newch);
+        newattr.onupdate && newattr.onupdate(el);
+        return el
+    }
+
+
+    function morph (el, oldvnode, {type, attributes, children}) {
+        if (type.func) return morphInstance(el, type, attributes, children)
+        else return morphVNode(el, oldvnode.attributes, oldvnode.children, attributes, children)
+    }
+
+
+    function patch (el, oldnode, newnode) {
+        return (oldnode.type && oldnode.type === newnode.type ? morph : replace)(el, oldnode, newnode) 
+    }
+
+    function getInstanceIndex(type, el) {
+        return seekIndex(type.instances, inst => (inst.el === el))
+    }
+
+    function makeView (type, attributes, children) {
+        const vnode = type.func(Object.assign({}, attributes, type.data), children); //common with morphInstance --> factor out.
+        const el = make(vnode);
+        type.instances = type.instances || [];
+        type.instances.push({el, vnode, attributes, children});
+        return el
+    }
+
+    function makeNode ({type, attributes={}, children=[]}, svg=false) {
+        if (type.func) return makeView(type, attributes, children)
+        svg = svg || (type === 'svg');
+        const el = svg ? document.createElementNS('http://www.w3.org/2000/svg', type) : document.createElement(type);
+        updateAttributes(el, {}, attributes);
+        children.forEach(chnode => el.appendChild(make(chnode, svg)));
+        attributes.oncreate && attributes.oncreate(el);
+        return el
+    }
+
+    function make (vnode, svg) {
+        return vnode.func ? make(h(vnode)) : vnode.type ? makeNode(vnode, svg) : document.createTextNode(vnode)
+    }
+
+    function h (type, attributes, ...children) {
+        attributes = attributes || {};
+        children = [].concat(...[].concat(...children)).filter(c => (c !== false && c != null));
+        return (typeof type === 'function') ? type(attributes, children) : {type, attributes, children}
+    }
+
+    function define (func, data) {
+        return {func, data}
+    }
+
+    function mount (vnode, container) {
+        const el = make(vnode);
+        container.innerHTML = '';
+        container.appendChild(el);
+    }
+
+    function update (view, data) {
+        view.data = data;
+        view.instances = view.instances || []; //common pattern with makeInstance --> factor out
+        view.instances.forEach(inst => morphInstance(inst.el, view, inst.attributes, inst.children));
+    }
+
+    exports.h = h;
+    exports.patch = patch;
+    exports.make = make;
+    exports.mount = mount;
+    exports.define = define;
+    exports.update = update;
+
+    Object.defineProperty(exports, '__esModule', { value: true });
+
+})));
 //# sourceMappingURL=zxdom.js.map

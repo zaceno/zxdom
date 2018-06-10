@@ -1,46 +1,30 @@
 import {h, define, update} from '../../src'
 import css from './style.css'
-
-function slideIn (el) {
-    el.style.transform = 'translateX(100%)'
-    el.style.opacity = '0'
-    el.style.transition = 'all ease-in-out 400ms'
-    requestAnimationFrame(_ => {
-        el.style.transform = null
-        el.style.opacity = null
-        setTimeout(_ => {
-            el.style.transition = null
-        }, 400)
-    })
-}
-
-function popOut (el) {
-    el.style.transition = 'all ease-in-out 400ms'
-    requestAnimationFrame(_ => {
-        el.style.transform = 'scale(2.0, 2.0)'
-        el.style.opacity = '0.0'
-        setTimeout(_ => {
-            el.parentNode.removeChild(el)
-        }, 400)
-    })
-    return true
-}
+import {Exit, Enter, Move} from './transitions'
 
 
 const Toast = ({key, clear}, message) => (
-    <div oncreate={slideIn} onremove={popOut} class={css.toast} key={key} onclick={clear}>
-        {message}
-    </div>
+    <Enter css={{transform: 'translateX(100%)', opacity: '0'}} time={200} delay={200}>
+        <Exit css={{transform: 'scale(2.0, 2.0)', opacity: '0'}} time={200}>
+            <Move time={200}>
+                <div class={css.toast} key={key} onclick={clear}>
+                    {message}
+                </div>
+            </Move>
+        </Exit>
+    </Enter>
 )
 
 const ToastList = ({clearAll, clear, messages}) => (
     <section class={css.toastList}>
         <button onclick={clearAll}>Clear All</button>
+        <div>
         {messages.map((m, i) => (
             <Toast key={m.key} clear={_ => clear(i)}>
                 {m.text}
             </Toast>
         ))}
+        </div>
     </section>
 )
 

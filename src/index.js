@@ -1,15 +1,9 @@
 /*
-TODO: preventing removal in onremove lifecycle works in reverse to what it should.
-when right now, when a child-node's onremove returns true, that prevents us from
-properly removing a parent node which may not even have an onremove hook. 
-
-Instead, we should do this: when we go to remove a node, we only respect the return value
-of onremoves from the top node. Children wo return true from their onremove calls are not preserved (they go when the parent goes)
-However, we still need to call their eventual onremove hooks.
 
 TODO: write tests for onremove-prevent-remove behavior
-
-TODO: write tests for making and mouting a plain component (not in a vtree)
+when we go to remove a node, we only respect the return value
+of onremoves from the top node. Children wo return true from their onremove calls are not preserved (they go when the parent goes)
+However, we still need to call their eventual onremove hooks.
 
 TODO: write tests for checkboxes, and boolean attrs (maybe done already?)
 
@@ -25,9 +19,9 @@ TODO: Optimize: If keyed nodes move down, we will instead move *up* every subseq
 by just building a list of moves, and notice that a series of up-moves of one, could be replaced by a single
 down move (maybe?)
 
-TODO: Port hyperapp-transitions to work with this lib. Look into including as an optional (tree-shakeabke) module
+TODO: transitions included as an optional (tree-shakeabke) module
 
-TODO: More better examples
+TODO: Example with forms and validation Something with forms and validations
 
 TODO: Prettier example-pages
 
@@ -72,22 +66,27 @@ function willRemove(el, oldvnode) {
             prevent = willRemove(el, type.instances[inst].vnode)
             type.instances.splice(inst, 1)
         } else {
-            prevent = children.map((chvnode, i) => willRemove(el.childNodes[i], chvnode)).reduce((a, b) => (a || b), false)
-            if (!prevent && attributes.onremove) { prevent = attributes.onremove(el) }
+            children.map((chvnode, i) => willRemove(el.childNodes[i], chvnode))
+            if (attributes.onremove) { prevent = attributes.onremove(el) }
         }    
     }
     return prevent
 }
 
 function remove(el, oldvnode) {
+    if (willRemove(el, oldvnode)) return false
+    el.parentNode && el.parentNode.removeChild(el)
+    return true
+}
+
+function replace (el, oldvnode, newvnode) {
     const prevent = willRemove(el, oldvnode)
-    console.log('PREVENT IS', prevent,)
-    if (el.parentNode && !prevent) {
-        console.log('REMVING!')
-        el.parentNode.removeChild(el)
-    } else {
-        console.log('NOT REMOVINT')
+    const newel = make(newvnode)
+    if (el.parentNode) {
+        if (prevent) el.parentNode.insertBefore(newel, el)
+        else el.parentNode.replaceChild(newel, el)
     }
+    return newel
 }
 
 function getKey (node) {
@@ -109,6 +108,7 @@ function morphInstance (oldel, view, attributes, children) {
 function seekId(node) {
     return node.type ? (node.attributes.key || node.type) : node
 }
+
 function seekNode(list, node, start) {
     const sought = seekId(node)
     return seekIndex(list, item => (seekId(item) === sought), start)
@@ -131,8 +131,8 @@ function patchChildren(parent, oldch, newch) {
         n++
     }
     while (n < oldch.length) {
-        remove(parent.childNodes[n], oldch[n])
-        oldch.splice(n, 1)
+        const didRemove = remove(parent.childNodes[n], oldch[n])
+        if (!didRemove) n++
     }
     while (n < newch.length)  parent.appendChild(make(newch[n++]))
 }
@@ -149,16 +149,6 @@ function morphVNode(el, oldattr, oldch, newattr, newch) {
 function morph (el, oldvnode, {type, attributes, children}) {
     if (type.func) return morphInstance(el, type, attributes, children)
     else return morphVNode(el, oldvnode.attributes, oldvnode.children, attributes, children)
-}
-
-function replace (el, oldvnode, newvnode) {
-    const prevent = willRemove(el, oldvnode)
-    const newel = make(newvnode)
-    if (el.parentNode) {
-        if (prevent) el.parentNode.insertBefore(newel, el)
-        else el.parentNode.replaceChild(newel, el)
-    }
-    return newel
 }
 
 
