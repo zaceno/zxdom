@@ -215,26 +215,3 @@ test('false attributes for disabled, checked should remove them', t => {
 })
 
 
-/*
-TODO: TEST WITH KEYED DYNAMIC COMPONENTS. THEY SHOULD BE REORDERED PROPERLY WITHOUT CALLS TO ONREMOVE/CREATE
-*/
-
-
-//SOMETHINGS wierd with checked. Possibly due to JSDOM. It works anyway, but not the test
-// test('checked is always set, even if it hasnt changed, because checked can change from user interaction', t => {
-//     const container = document.createElement('main')
-//     const component = define(({checked}) => h('input', {type: 'checkbox', checked}), {checked: false})
-//     mount (component, container)
-//     const el = container.firstChild
-//     t.is(el.value, false)
-//     update(component, {checked: true})
-//     t.is(el.value, 'on')
-//     el.value = false
-//     update(component, {checked: true})
-//     t.is(el.value, 'on')
-// })
-
-//TODO: what about selected? in dropdown?
-//TODO: what about raidio buttons?
-
-//TOODO: make it possible to use class instances as views, so you can call update(this.view, this)
