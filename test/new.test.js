@@ -205,13 +205,13 @@ test('outer component updated after inner component updated, keeps new shape of 
 test('false attributes for disabled, checked should remove them', t => {
     const component = define(({step}) => h('div', {}, [
         h('button', {disabled: step > 0}, ['foo']),
-        h('input', {type: 'checkbox', checked: step < 1}, ['bar']),
+        h('p', {'data-bool': step < 1}, ['bar']),
     ]), {step: 0})
     const container = document.createElement('main')
     mount(component, container)
-    t.is(container.innerHTML, '<div><button>foo</button><input type="checkbox" checked="true"></div>')
+    t.is(container.innerHTML, '<div><button>foo</button><p data-bool="true">bar</p></div>')
     update(component, {step: 1})
-    t.is(container.innerHTML, '<div><button disabled="true">foo</button><input type="checkbox"></div>')
+    t.is(container.innerHTML, '<div><button disabled="true">foo</button><p>bar</p></div>')
 })
 
 

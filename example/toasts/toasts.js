@@ -2,28 +2,27 @@ import {h, define, update} from '../../src'
 import css from './style.css'
 import {Exit, Enter, Move} from './transitions'
 
-
 const Toast = ({key, clear}, message) => (
-    <Enter css={{transform: 'translateX(100%)', opacity: '0'}} time={200} delay={200}>
-        <Exit css={{transform: 'scale(2.0, 2.0)', opacity: '0'}} time={200}>
-            <Move time={200}>
+    <Exit css={{transform: 'scale(1.5, 1.5)', opacity: '0'}} time={180} easing="ease-in">
+        <Enter css={{transform: 'translateX(100%)', opacity: '0'}} time={180} delay={180} easin="ease-out">
+            <Move time={180} easing="ease-in-out">
                 <div class={css.toast} key={key} onclick={clear}>
                     {message}
                 </div>
             </Move>
-        </Exit>
-    </Enter>
+        </Enter>
+    </Exit>
 )
 
 const ToastList = ({clearAll, clear, messages}) => (
     <section class={css.toastList}>
         <button onclick={clearAll}>Clear All</button>
         <div>
-        {messages.map((m, i) => (
+            {messages.map((m,i) => (
             <Toast key={m.key} clear={_ => clear(i)}>
                 {m.text}
             </Toast>
-        ))}
+            ))}
         </div>
     </section>
 )

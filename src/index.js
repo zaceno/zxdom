@@ -5,7 +5,9 @@ when we go to remove a node, we only respect the return value
 of onremoves from the top node. Children wo return true from their onremove calls are not preserved (they go when the parent goes)
 However, we still need to call their eventual onremove hooks.
 
-TODO: write tests for checkboxes, and boolean attrs (maybe done already?)
+TODO: TEST WITH KEYED DYNAMIC COMPONENTS. THEY SHOULD BE REORDERED PROPERLY WITHOUT CALLS TO ONREMOVE/CREATE
+
+TOODO: make it possible to use class instances as views, so you can call update(this.view, this)
 
 TODO: write tests for svg support if possible.
 
@@ -133,6 +135,7 @@ function patchChildren(parent, oldch, newch) {
     while (n < oldch.length) {
         const didRemove = remove(parent.childNodes[n], oldch[n])
         if (!didRemove) n++
+        else oldch.splice(n, 1)
     }
     while (n < newch.length)  parent.appendChild(make(newch[n++]))
 }
