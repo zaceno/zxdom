@@ -176,7 +176,7 @@ test('keys reorder properly among unkeyed with addition', t => {
 })
 
 
-test.only('keys reorder properly among unkeyed with removal', t => {
+test('keys reorder properly among unkeyed with removal', t => {
     const keyed = ({key}) => h('p', {
         key: key,
         oncreate: el => {el.id = key},
@@ -309,3 +309,58 @@ test('keys reorder properly among textnodes with removal', t => {
     `))
 })
 
+
+
+
+test('keye components reorder properly among unkeyed with removal', t => {
+    t.plan(6)
+    const makeComp = key => define(_ => h('p', {
+        key,
+        id: key,
+        oncreate: _ => t.pass(),
+        onremove: _ => t.pass(),
+    }, [key]))
+    const compA = makeComp('aaa')
+    const compB = makeComp('bbb')
+    const compC = makeComp('ccc')
+    const compD = makeComp('ddd')
+    const compE = makeComp('eee')
+    const container = document.createElement('main')
+    const main = define(({step}) => h('div', {}, [
+        [
+            h('p', {}, ['baz']),
+            h(compA),
+            h(compB),
+            h('p', {}, ['bing']),
+            h(compC),
+            h(compD),
+            h('p', {}, ['foo']),
+            h('p', {}, ['bar']),
+            h(compE),
+        ],
+        [
+            h(compC),
+            h(compE),
+            h('p', {}, ['foo']),
+            h(compB),
+            h('p', {}, ['bar']),
+            h(compD),
+            h(compA),
+            h('p', {}, ['baz']),
+        ]
+    ][step]), {step: 0})
+    mount(main, container)
+    update(main, {step: 1})
+    t.is(container.innerHTML, despace(`
+        <div>
+            <p id="ccc">ccc</p>
+            <p id="eee">eee</p>
+            <p>foo</p>
+            <p id="bbb">bbb</p>
+            <p>bar</p>
+            <p id="ddd">ddd</p>
+            <p id="aaa">aaa</p>
+            <p>baz</p>
+        </div>
+    `))
+})

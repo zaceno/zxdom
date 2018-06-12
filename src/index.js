@@ -1,15 +1,5 @@
 /*
-
-TODO: write tests for onremove-prevent-remove behavior
-when we go to remove a node, we only respect the return value
-of onremoves from the top node. Children wo return true from their onremove calls are not preserved (they go when the parent goes)
-However, we still need to call their eventual onremove hooks.
-
-TODO: TEST WITH KEYED DYNAMIC COMPONENTS. THEY SHOULD BE REORDERED PROPERLY WITHOUT CALLS TO ONREMOVE/CREATE
-
 TOODO: make it possible to use class instances as views, so you can call update(this.view, this)
-
-TODO: write tests for svg support if possible.
 
 TODO refactor functions that will use less property-names, and also make the code more readable and descriptive what is being done.
 
@@ -21,17 +11,9 @@ TODO: Optimize: If keyed nodes move down, we will instead move *up* every subseq
 by just building a list of moves, and notice that a series of up-moves of one, could be replaced by a single
 down move (maybe?)
 
-TODO: transitions included as an optional (tree-shakeabke) module
+TODO: transitions included as an optional (tree-shakeabke) module?
 
 TODO: Example with forms and validation Something with forms and validations
-
-TODO: Prettier example-pages
-
-TODO: Docs. Pitch, Getting Started, In depth walkthrough (including live runnable examples),  Introduce the Examples, API docs. Use the docs folder so github makes a website for it.
-
-TODO: SVG Logo & fancy splash pages
-
-TODO: Setup Stefan Krauses benchmark and see where we're at
 */
 
 
