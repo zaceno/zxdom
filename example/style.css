@@ -16,7 +16,7 @@ html, body {
 }
 
 .left {
-    flex: 0 0 300px;
+    flex: 0 0 170px;
     background: #cae;
 }
 
@@ -24,4 +24,8 @@ html, body {
     flex: 1 1 auto;
     background: #fff;
     padding: 20px;
+}
+.logo {
+    text-align: center;
+    padding-top: 1em;
 }

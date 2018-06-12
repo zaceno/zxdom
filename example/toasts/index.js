@@ -7,7 +7,6 @@ const writer = Writer({onsubmit: reciever.addMessage})
 
 const view = define(_ => (
     <section>
-        <h3>under construction dawg</h3>
         <writer.view />
         <reciever.view />
     </section>
