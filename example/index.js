@@ -2,10 +2,12 @@ import {h, mount, define, update} from '../src/'
 import css from './style.css'
 
 const examples = [
-    { url: '#clock',   title: 'SVG Clock',     module: import('./clock') },
-    { url: '#counter', title: 'Basic Counter', module: import('./counter')},
-    { url: '#todo',    title: 'TodoMVC',       module: import('./todo')},
-    { url: '#toast',    title: 'Toasts',       module: import('./toasts')}
+    { url: '#clock',   title: 'SVG Clock',       module: import('./clock') },
+    { url: '#counter', title: 'Basic Counter',   module: import('./counter')},
+    { url: '#todo',    title: 'TodoMVC',         module: import('./todo')},
+    { url: '#toast',   title: 'Toasts',          module: import('./toasts')},
+    { url: '#select',  title: 'Selectable Grid', module: import('./select')},
+    
 ]
 const ExampleMenu = _ => (
     <ul>{examples.map(x => (

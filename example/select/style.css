@@ -1,0 +1,18 @@
+
+table.grid {
+    border-collapse: collapse;
+}
+td {
+    background: #444;
+    color: #ccc;
+    border: 1px #ccc solid;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    color: #5ff;
+    font-size: 11px;
+    font-family: sans-serif;
+}
+td.selected {
+    background-color: #a80;
+}
