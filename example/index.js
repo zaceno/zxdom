@@ -7,6 +7,7 @@ const examples = [
     { url: '#todo',    title: 'TodoMVC',         module: import('./todo')},
     { url: '#toast',   title: 'Toasts',          module: import('./toasts')},
     { url: '#select',  title: 'Selectable Grid', module: import('./select')},
+    { url: '#form',    title: 'Dynamic form',    module: import('./form')},
     
 ]
 const ExampleMenu = _ => (
