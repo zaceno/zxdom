@@ -1,6 +1,4 @@
 /*
-TOODO: make it possible to use class instances as views, so you can call update(this.view, this)
-
 TODO refactor functions that will use less property-names, and also make the code more readable and descriptive what is being done.
 
 TODO refactor tests to be more descriptive of the api and less "incrementally built up"
@@ -12,8 +10,6 @@ by just building a list of moves, and notice that a series of up-moves of one, c
 down move (maybe?)
 
 TODO: transitions included as an optional (tree-shakeabke) module?
-
-TODO: Example with forms and validation Something with forms and validations
 */
 
 
