@@ -4,7 +4,6 @@ import Toggle from './toggle-all'
 import Entry from './entry'
 import Filters from './filters'
 import css from './style.css'
-
 const toggle = Toggle({ontoggle: x => list.setAll(x) })
 const filters = Filters({onchange: f => list.setFilter(f) })
 const list = List({

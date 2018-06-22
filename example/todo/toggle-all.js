@@ -1,38 +1,33 @@
 import {h, define, update} from '../../src/'
 import css from './style.css'
-
-const AllDoneCheckbox = ({checked, onclick}) => (
-    <input
-        alt="Mark all as complete"
-        type="checkbox"
-        class={css['toggle-all']}
-        checked={checked}
-        onclick={onclick}
-    />
-)
+import Model from './model'
 
 export default function ({ontoggle}) {
-    var checked = false
-
-    function onclick () {
-        checked = !checked
-        ontoggle(checked)
-        updateView()
-    }
-    
-    function uncheck () {
-        checked = false
-        updateView()
-    }
-    
-    const view = define(AllDoneCheckbox)
-
-    function updateView () {
-        update(view, {checked, onclick})
-    }
-    
-    updateView()
-    
+    const view = define(({checked, onclick}) => (
+        <input
+            alt="Mark all as complete"
+            type="checkbox"
+            class={css['toggle-all']}
+            checked={checked}
+            onclick={onclick}
+        />
+    ))
+    const {uncheck} = Model(
+        {
+            checked: false
+        },
+        {
+            onclick: _ => s => {
+                ontoggle()
+                return {checked: !s.checked}
+            },
+            uncheck: _ => ({checked: false})
+        },
+        (s, a) => update(view, {
+            checked: s.checked,
+            onclick: a.onclick
+        })
+    )
     return {view, uncheck}
 }
 

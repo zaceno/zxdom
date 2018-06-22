@@ -1,6 +1,7 @@
 import {h, define, update} from '../../src/'
 import Item from './item'
 import css from './style.css'
+import Model from './model'
 
 const ListView = ({items}) => (
     <ul class={css['todo-list']}>
@@ -24,61 +25,47 @@ const Count = ({n}) => (n > 0) ? (
     </span>
 ) : ''
 
+
+const ListModel = ({ontoggle, onadd}, onupdate) => Model(
+    {items: [], filter: x => true},
+    {
+        clearCompleted: _ => ({items}) => ({
+            items: items.filter(i => !i.getDone())
+        }),
+        remove: item => ({items}) => ({
+            items: items.filter(i => i !== item)
+        }),
+        ontoggle: _ => ontoggle(),
+        add: text => ({items}, {remove, ontoggle}) => {
+            const item = Item({
+                text,
+                ontoggle,
+                onremove: remove(item)
+            })
+            onadd()
+            return {items: [].concat(item, items)}
+        },
+        setFilter: filter => ({filter}),
+        setAll: x => state => { state.items.forEach(i => i.setDone(x))},
+    },
+    onupdate
+)
+
 export default function ({ontoggle, onadd}) {
-
-    var items = []
-    var filter = x => true
-
-    function clearCompleted () {
-        items = items.filter(i => !i.getDone())
-        updateViews()
-    }
-    
-    function onItemToggle () {
-        ontoggle()
-        updateViews()
-    }
-    
-    function remove (item) {
-        items.splice(items.indexOf(item), 1)
-        updateViews()
-    }
-    
-    function add (text) {
-        const item = Item({
-            text,
-            ontoggle: onItemToggle,
-            onremove () { remove(item)},
-        })
-        items.unshift(item)
-        onadd()
-        updateViews()
-    }
-
-    function setFilter (f) {
-        filter = f
-        updateViews()
-    }
-
-    function setAll (x) {
-        items.forEach(i => i.setDone(x))
-        updateViews()
-    }
 
     const main = define(ListView)
     const count = define(Count)
     const clear = define(ClearButton)
-    
-    function updateViews () {
-        update(main, { items: items.filter(filter).map(i => i.view) })
-        update(count, { n: items.filter(i => !i.getDone()).length })
+
+    const {add, setFilter, setAll} = ListModel({onadd, ontoggle}, (state, actions) => {
+        update(main, { items: state.items.filter(state.filter).map(i => i.view) })
+        update(count, { n: state.items.filter(i => !i.getDone()).length })
         update(clear, {
-            n: items.filter(i => i.getDone()).length,
-            clear: clearCompleted,
+            n: state.items.filter(i => i.getDone()).length,
+            clear: actions.clearCompleted,
         })
-    }
-    updateViews()
-    
+    })
+
     return {main, count, clear, add, setFilter, setAll}
 }
 

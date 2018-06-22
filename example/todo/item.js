@@ -1,12 +1,18 @@
 import {h, define, update} from '../../src/'
 import css from './style.css'
+import Model from './model'
 
 const ItemView = ({text, done, toggle, onremove, editing, edit, onsubmit}) => (
     <li
         ondblclick={_ => !editing && edit()}
-        class={css.todo + (editing && (' ' + css.editing)) + (done && (' ' + css.complete))}
+        onupdate={el => {
+            if (editing) el.classList.add(css.editing)
+            else el.classList.remove(css.editing)
+            if (done) el.classList.add(css.complete)
+            else el.classList.remove(css.complete)
+        }}
     >
-        <div class="view">
+        <div class={css.view}>
             <input
                 type="checkbox"
                 class={css.toggle}
@@ -27,46 +33,55 @@ const ItemView = ({text, done, toggle, onremove, editing, edit, onsubmit}) => (
     </li>
 )
 
+const ItemModel = ({text, ontoggle}, onupdate) => Model(
+    {
+        text,
+        done: false,
+        editing: false,
+    },
+
+    {
+        toggle: _ => state => {
+            let done = !state.done
+            ontoggle(done)
+            return {done}
+        },
+        edit: _ => ({editing: true}),
+        submit: text => ({text, editing: false}),
+        setDone: x => ({done: x})
+    },
+    
+    onupdate
+)
+
 export default function ({text, onremove, ontoggle}) {
-    
+    var view = define(ItemView)
     var done = false
-    var editing = false
-
-    
-    function toggle () {
-        done = !done
-        ontoggle()
-        updateView()
-    }
-    
-    function edit () {
-        editing = true
-        updateView()
-    }
-    
-    function onsubmit (x) {
-        text = x
-        editing = false
-        updateView()
-    }
-
-    function getDone () {
-        return done
-    }
-    
-    function setDone (x) {
-        done = x
-        updateView()
-    }
-
-    const view = define(ItemView)
-    
-    function updateView () {
-        update(view, { text, done, onremove, editing, toggle, edit, onsubmit })
-    }
-    
-    updateView()
+    function getDone() {return done}
+    const {setDone} = ItemModel(
+        {
+            text,
+            ontoggle: done2 => {
+                done = done2
+                ontoggle()
+            }
+        },
+        (state, actions) => {
+            done = state.done
+            update(view, {
+                text: state.text,
+                done: state.done,
+                toggle: actions.toggle,
+                onremove,
+                editing: state.editing,
+                edit: actions.edit,
+                onsubmit: actions.submit,
+            })
+        }
+    ) 
 
     return {view, getDone, setDone}
 }
+
+
 
