@@ -5,6 +5,7 @@
   "main": "dist/zxdom.js",
   "module": "src/index.js",
   "scripts": {
+    "docrunner": "rollup ./runnable-example.js -f iife -o docs/runnable-example.js",
     "clean": "rm dist/*.*",
     "bundle": "rollup src/index.js -m -f umd -n zxdom -o dist/zxdom.js",
     "minify": "uglifyjs dist/zxdom.js -o dist/zxdom.js -mc --safari10 --source-map includeSources,url=zxdom.js.map",
