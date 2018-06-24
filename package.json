@@ -24,6 +24,7 @@
   "devDependencies": {
     "autoprefixer": "^8.6.1",
     "ava": "^0.25.0",
+    "babel-plugin-transform-builtin-classes": "^0.6.1",
     "babel-plugin-transform-react-jsx": "^6.24.1",
     "babel-preset-env": "^1.6.1",
     "jsdom": "^11.10.0",

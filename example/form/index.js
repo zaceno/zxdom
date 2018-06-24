@@ -185,7 +185,7 @@ var errors = []
 reset()
 
 
-export const view = _ => (
+export const view = (
     <section>
         <h2>Character Sheet</h2>
         <Form />

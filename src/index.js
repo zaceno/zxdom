@@ -9,7 +9,9 @@ TODO: Optimize: If keyed nodes move down, we will instead move *up* every subseq
 by just building a list of moves, and notice that a series of up-moves of one, could be replaced by a single
 down move (maybe?)
 
-TODO: transitions included as an optional (tree-shakeabke) module?
+TODO: model, transitions included as an optional (tree-shakeabke) module?
+
+TODO: 
 */
 
 
