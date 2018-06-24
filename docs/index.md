@@ -44,9 +44,7 @@ In order to turn *virtual* dom nodes into *real* dome nodes, use the `make` func
 somewhere in the real dom:
 
 
-<runnable-example>
-
-```
+<runnable-example><pre><code>
 const virtualNode = h('div', {style: 'border: 1px red solid;'}, [
     h('p', {}, 'Hello world'),
     h('button', {onclick: _ => alert('hi!')}, 'Push me')
@@ -55,9 +53,7 @@ const virtualNode = h('div', {style: 'border: 1px red solid;'}, [
 const elem = make(virtualNode)
 
 document.querySelector('#example-make').appendChild(elem)
-```
-
-</runnable-example>
+</code></pre></runnable-example>
 
 
 <div id="example-make">
