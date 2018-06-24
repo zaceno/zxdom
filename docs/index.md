@@ -55,5 +55,7 @@ const elem = make(virtualNode)
 document.querySelector('#example-make').appendChild(elem)
 </runnable-example>
 
-<div id="example-make">Example will show here when run</div
+<div id="example-make">
+        Example will show here when run
+</div>
 
