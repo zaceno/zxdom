@@ -1,6 +1,6 @@
+---
 layout: page
-
-----
+---
 
 
 <script src="./runnable-example.js"></script>
