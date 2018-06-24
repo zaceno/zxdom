@@ -45,6 +45,7 @@ somewhere in the real dom:
 
 
 <runnable-example>
+
 ```
 const virtualNode = h('div', {style: 'border: 1px red solid;'}, [
     h('p', {}, 'Hello world'),
@@ -55,6 +56,7 @@ const elem = make(virtualNode)
 
 document.querySelector('#example-make').appendChild(elem)
 ```
+
 </runnable-example>
 
 
