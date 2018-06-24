@@ -2,6 +2,27 @@
 layout: page
 ---
 
+# ZXDOM
+
+ZXDOM is a lightweight, minimalistic javascript library to help you create and modify DOM Elements in your web-pages. Use it for dynamic widgets in your web-pages, shareable WebComponents, or even full-blown single-page-applications. 
+
+Here's a simple example of how to create and mount a counter:
+
+<runnable-example><pre><code class="lang-js">
+const Counter = define(({value}) => h('p', {}, [
+    h('button', {onclick: _ => update(Counter, {value: value - 1})}, '-'),
+    value,
+    h('button', {onclick: _ => update(Counter, {value: value + 1})}, '+'),
+]))
+
+mount(Counter, document.querySelector('#example-counter'))
+</code></pre></runnable-example>
+
+Click the `Run` button above to see the result below:
+
+<div id="example-counter"></div>
+
+
 You use the `h` function to generate a virtual dom tree: a representation of what you'd like the DOM to look like.
 
 ```js
