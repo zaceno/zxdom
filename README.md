@@ -1,5 +1,5 @@
 
-# <img height="24" src="https://cdn.rawgit.com/zaceno/f96607fd718c42bd912bb161834ecb5e/raw/2cd75c3fbf62b4e2afef81739dc1b481b52e73b5/logo.svg"> ZXDOM
+# <img height="26" src="https://cdn.rawgit.com/zaceno/f96607fd718c42bd912bb161834ecb5e/raw/2cd75c3fbf62b4e2afef81739dc1b481b52e73b5/logo.svg"> ZXDOM
 
 A minimalistic, lightweight library for managing your DOM, based on the "virtual-DOM" idea. Use it to manage dynamic widgets in your static web-pages, to make WebComponents, or even full blown single-page-application.
 
