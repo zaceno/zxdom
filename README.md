@@ -3,7 +3,7 @@
 
  A minimalistic, lightweight library for managing your DOM, based on the "virtual-DOM" idea. Use it to manage dynamic widgets in your static web-pages, to make WebComponents, or even full blown single-page-application.
 
-<div style="float:left;"><img height="40" src="https://cdn.rawgit.com/zaceno/f96607fd718c42bd912bb161834ecb5e/raw/2e3f3e16cff00d420d606194d7fab7270c9a7f1f/logo.svg"></div>
+<center><img height="40" src="https://cdn.rawgit.com/zaceno/f96607fd718c42bd912bb161834ecb5e/raw/2e3f3e16cff00d420d606194d7fab7270c9a7f1f/logo.svg"></center>
 
 
 ## An example
