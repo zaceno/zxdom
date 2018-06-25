@@ -60,4 +60,4 @@ I designed it to be minimal, not only in terms of footprint, but in adding *arti
 
 ## Acknowledgement
 
-Heavily inspired by [Hyperapp](https://github.com/hyperapp/hyperapp). – Which you should totally look into if you're looking for something more frameworkish.
+Heavily inspired by [Hyperapp](https://github.com/hyperapp/hyperapp). – Which you should totally look into if you want something still minimal, but more frameworkish.
