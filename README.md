@@ -1,4 +1,4 @@
-# zxdom
+# ZXDOM
 
 A minimalistic, lightweight library for managing your DOM, based on the "virtual-DOM" idea. Use it to manage dynamic widgets in your static web-pages, to make WebComponents, or even full blown single-page-application.
 
