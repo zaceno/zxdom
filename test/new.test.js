@@ -1,5 +1,5 @@
 import test from 'ava'
-import {h, mount, update, define} from '../dist/zxdom'
+import {h, mount, update, define, make, patch} from '../dist/zxdom'
 import {JSDOM} from 'jsdom'
 const dom = new JSDOM('<html><head></head><body></body></html>')
 global.window = dom.window
@@ -214,4 +214,25 @@ test('false attributes for disabled, checked should remove them', t => {
     t.is(container.innerHTML, '<div><button disabled="true">foo</button><p>bar</p></div>')
 })
 
+test('mount returns the created element', t => {
+    const container = document.createElement('main')
+    const el = mount(h('div', {}, ['foo']), container)
+    t.is(el, container.childNodes[0])
+})
 
+test('patching does not destroy the old-node', t => {
+    const firstFn = _ => h('p', {}, [
+        'a',
+        h('span', {}, ['b']),
+        'c'
+    ])
+    const firstCopy = firstFn()
+    const first = firstFn()
+    const second = h('p', {}, [
+        'a',
+        'b'
+    ])
+    var el = make(first)
+    el = patch(el, first, second)
+    t.deepEqual(first, firstCopy)
+})

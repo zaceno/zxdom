@@ -100,6 +100,7 @@
     }
 
     function patchChildren(parent, oldch, newch) {
+        oldch = oldch.slice(); //copy, since we'll be mutating it further down.
         let n = 0;
         while (n < oldch.length && n < newch.length) {
             let o = seekNode(oldch, newch[n], n);
@@ -182,6 +183,7 @@
         const el = make(vnode);
         container.innerHTML = '';
         container.appendChild(el);
+        return el
     }
 
     function update (view, data) {
