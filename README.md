@@ -47,6 +47,8 @@ $> npm install
 $> npm run demo
 ```
 
+...then go to http://localhost:1234
+
 ## Browser support
 
 Currently: Chrome, Firefox and Safari. Not IE. Probably Edge but I haven't tested.
