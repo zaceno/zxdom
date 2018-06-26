@@ -1,58 +1,55 @@
 /*
-TODO refactor functions that will use less property-names, and also make the code more readable and descriptive what is being done.
-
 TODO refactor tests to be more descriptive of the api and less "incrementally built up"
 
 TODO: Optimize: textnodes are always inserted, then the old ones removed. If they're the same string we could leave them alone
-
 TODO: Optimize: If keyed nodes move down, we will instead move *up* every subsequent nodes one step. COuld be optimized
 by just building a list of moves, and notice that a series of up-moves of one, could be replaced by a single
 down move (maybe?)
-
-TODO: model, transitions included as an optional (tree-shakeabke) module?
-
-TODO: 
 */
 
+function h (type, attributes, ...children) {
+    attributes = attributes || {}
+    children = [].concat(...[].concat(...children)).filter(c => (c !== false && c != null))
+    return (typeof type === 'function') ? type(attributes, children) : {type, attributes, children}
+}
 
-function seekIndex(list, fn, start = 0) {
-    return list.reduce((found, item, index) => (index < start || found > -1 || !fn(item)) ? found : index, -1)
+function mount (vnode, container) {
+    const el = make(vnode)
+    container.innerHTML = ''
+    container.appendChild(el)
+    return el
+}
+
+function define (func, data) {
+    return {func, data}
 }
 
 
-function setAttribute(el, name, oldval, val) {
-    if (name === 'key' || name === 'value' || name === 'checked' || name.substr(0,2) === 'on') {
-        el[name] = val
-    } else if (val == null || val === false) {
-        el.removeAttribute(name)
-    } else if (oldval !== val) {
-        el.setAttribute(name, val)
-    }
+function update (view, data) {
+    view.data = data
+    view.instances = view.instances || [] //common pattern with makeInstance --> factor out
+    view.instances.forEach(inst => patchInstance(inst.el, view, inst.attributes, inst.children))
 }
 
-function updateAttributes (el, oldattr, newattr) {
-    Object.keys(oldattr).forEach(name => {
-        if (newattr[name] == null) setAttribute(el, name)
-    })
-    Object.keys(newattr).forEach(name => {
-        setAttribute(el, name, oldattr[name], newattr[name])
-    })
+//-------------
+
+function make (vnode, svg) {
+    if (vnode.func) return make(h(vnode))
+    if (!vnode.type) return document.createTextNode(vnode)
+    return (vnode.type.func ? makeInstance : makeElement)(vnode, svg)
 }
 
-function willRemove(el, oldvnode) {
-    let prevent = false
-    if (oldvnode.type) {
-        const {type, attributes, children} = oldvnode
-        if (type.func) {
-            const inst = getInstanceIndex(type, el)
-            prevent = willRemove(el, type.instances[inst].vnode)
-            type.instances.splice(inst, 1)
+function patch (el, oldnode, newnode) {
+    if (oldnode.type && oldnode.type === newnode.type) {
+        if (oldnode.type.func) {
+            el = patchInstance(el, newnode.type, newnode.attributes, newnode.children)
         } else {
-            children.map((chvnode, i) => willRemove(el.childNodes[i], chvnode))
-            if (attributes.onremove) { prevent = attributes.onremove(el) }
-        }    
+            el = patchElement(el, oldnode.attributes, oldnode.children, newnode.attributes, newnode.children)
+        }
+    } else {
+        el = replace(el, oldnode, newnode)
     }
-    return prevent
+    return el
 }
 
 function remove(el, oldvnode) {
@@ -71,14 +68,28 @@ function replace (el, oldvnode, newvnode) {
     return newel
 }
 
-function getKey (node) {
-    const attr = node.attributes
-    return (attr && attr.key) ? attr.key : null 
+function willRemove(el, oldvnode) {
+    if (!oldvnode.type) return false
+    if (oldvnode.type.func) return willRemoveInstance(el, oldvnode)
+    return willRemoveElement(el, oldvnode)
 }
 
+//-------------
 
-function morphInstance (oldel, view, attributes, children) {
-    const vnode = view.func(Object.assign({}, attributes, view.data), children)
+function makeInstance ({type, attributes, children}) {
+    const vnode = vnodeForView(type, attributes, children)
+    const el = make(vnode)
+    type.instances = type.instances || []
+    type.instances.push({el, vnode, attributes, children})
+    return el
+}
+
+function patchInstance (oldel, view, attributes, children) {
+    function getKey (node) {
+        const attr = node.attributes
+        return (attr && attr.key) ? attr.key : null 
+    }
+    const vnode = vnodeForView(view, attributes, children)
     const inst = getInstanceIndex(view, oldel)
     const oldvnode = view.instances[inst].vnode
     const el = (getKey(oldvnode) === getKey(vnode) ? patch : replace)(oldel, oldvnode, vnode)
@@ -86,15 +97,45 @@ function morphInstance (oldel, view, attributes, children) {
     return el
 }
 
-
-function seekId(node) {
-    return node.type ? (node.attributes.key || node.type) : node
+function willRemoveInstance (el, {type}) {
+    const index = getInstanceIndex(type, el)
+    const instance = type.instances[index]
+    type.instances.splice(index, 1)
+    return willRemove(el, instance.vnode)
 }
 
-function seekNode(list, node, start) {
-    const sought = seekId(node)
-    return seekIndex(list, item => (seekId(item) === sought), start)
+function getInstanceIndex(type, el) {
+    return seekIndex(type.instances, inst => (inst.el === el))
 }
+
+function vnodeForView(type, attributes, children) {
+    return type.func(Object.assign({}, attributes, type.data), children)
+}
+
+//-------------
+
+function makeElement ({type, attributes, children}, svg=false) {
+    svg = svg || (type === 'svg')
+    const el = svg ? document.createElementNS('http://www.w3.org/2000/svg', type) : document.createElement(type)
+    updateAttributes(el, {}, attributes)
+    children.forEach(chnode => el.appendChild(make(chnode, svg)))
+    attributes.oncreate && attributes.oncreate(el)
+    return el
+}
+
+function patchElement(el, oldattr, oldch, newattr, newch) {
+    updateAttributes(el, oldattr, newattr)
+    patchChildren(el, oldch, newch)
+    newattr.onupdate && newattr.onupdate(el)
+    return el
+}
+
+function willRemoveElement (el, {attributes, children}) {
+    children.forEach((c, i) => willRemove(el.childNodes[i], c))
+    return attributes.onremove && attributes.onremove(el)
+}
+
+//-----------------
 
 function patchChildren(parent, oldch, newch) {
     oldch = oldch.slice() //copy, since we'll be mutating it further down.
@@ -122,71 +163,40 @@ function patchChildren(parent, oldch, newch) {
 }
 
 
-function morphVNode(el, oldattr, oldch, newattr, newch) {
-    updateAttributes(el, oldattr, newattr)
-    patchChildren(el, oldch, newch)
-    newattr.onupdate && newattr.onupdate(el)
-    return el
+function seekNode(list, node, start) {
+    const sought = seekId(node)
+    return seekIndex(list, item => (seekId(item) === sought), start)
 }
 
-
-function morph (el, oldvnode, {type, attributes, children}) {
-    if (type.func) return morphInstance(el, type, attributes, children)
-    else return morphVNode(el, oldvnode.attributes, oldvnode.children, attributes, children)
+function seekId(node) {
+    return node.type ? (node.attributes.key || node.type) : node
 }
 
-
-function patch (el, oldnode, newnode) {
-    return (oldnode.type && oldnode.type === newnode.type ? morph : replace)(el, oldnode, newnode) 
+function updateAttributes (el, oldattr, newattr) {
+    Object.keys(oldattr).forEach(name => {
+        if (newattr[name] == null) setAttribute(el, name)
+    })
+    Object.keys(newattr).forEach(name => {
+        setAttribute(el, name, oldattr[name], newattr[name])
+    })
 }
 
-function getInstanceIndex(type, el) {
-    return seekIndex(type.instances, inst => (inst.el === el))
+function setAttribute(el, name, oldval, val) {
+    if (name === 'key' || name === 'value' || name === 'checked' || name.substr(0,2) === 'on') {
+        el[name] = val
+    } else if (val == null || val === false) {
+        el.removeAttribute(name)
+    } else if (oldval !== val) {
+        el.setAttribute(name, val)
+    }
 }
 
-function makeView (type, attributes, children) {
-    const vnode = type.func(Object.assign({}, attributes, type.data), children) //common with morphInstance --> factor out.
-    const el = make(vnode)
-    type.instances = type.instances || []
-    type.instances.push({el, vnode, attributes, children})
-    return el
+//----------------
+
+function seekIndex(list, fn, start = 0) {
+    return list.reduce((found, item, index) => (index < start || found > -1 || !fn(item)) ? found : index, -1)
 }
 
-function makeNode ({type, attributes={}, children=[]}, svg=false) {
-    if (type.func) return makeView(type, attributes, children)
-    svg = svg || (type === 'svg')
-    const el = svg ? document.createElementNS('http://www.w3.org/2000/svg', type) : document.createElement(type)
-    updateAttributes(el, {}, attributes)
-    children.forEach(chnode => el.appendChild(make(chnode, svg)))
-    attributes.oncreate && attributes.oncreate(el)
-    return el
-}
-
-function make (vnode, svg) {
-    return vnode.func ? make(h(vnode)) : vnode.type ? makeNode(vnode, svg) : document.createTextNode(vnode)
-}
-
-function h (type, attributes, ...children) {
-    attributes = attributes || {}
-    children = [].concat(...[].concat(...children)).filter(c => (c !== false && c != null))
-    return (typeof type === 'function') ? type(attributes, children) : {type, attributes, children}
-}
-
-function define (func, data) {
-    return {func, data}
-}
-
-function mount (vnode, container) {
-    const el = make(vnode)
-    container.innerHTML = ''
-    container.appendChild(el)
-    return el
-}
-
-function update (view, data) {
-    view.data = data
-    view.instances = view.instances || [] //common pattern with makeInstance --> factor out
-    view.instances.forEach(inst => morphInstance(inst.el, view, inst.attributes, inst.children))
-}
+//----------------
 
 export {h, patch, make, mount, define, update}
