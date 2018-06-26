@@ -40,13 +40,13 @@ const ListModel = ({ontoggle, onadd}, onupdate) => Model(
             const item = Item({
                 text,
                 ontoggle,
-                onremove: remove(item)
+                onremove: _ => remove(item)
             })
             onadd()
             return {items: [].concat(item, items)}
         },
         setFilter: filter => ({filter}),
-        setAll: x => state => { state.items.forEach(i => i.setDone(x))},
+        setAll: x => s => s.items.forEach(i => i.setDone(x)),
     },
     onupdate
 )

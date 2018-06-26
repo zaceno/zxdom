@@ -18,8 +18,9 @@ export default function ({ontoggle}) {
         },
         {
             onclick: _ => s => {
-                ontoggle()
-                return {checked: !s.checked}
+                const checked = !s.checked
+                ontoggle(checked)
+                return {checked}
             },
             uncheck: _ => ({checked: false})
         },
