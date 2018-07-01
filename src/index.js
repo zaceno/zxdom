@@ -53,18 +53,15 @@ function patch (el, oldnode, newnode) {
 }
 
 function remove(el, oldvnode) {
-    if (willRemove(el, oldvnode)) return false
+    willRemove(el, oldvnode)
     el.parentNode && el.parentNode.removeChild(el)
     return true
 }
 
 function replace (el, oldvnode, newvnode) {
-    const prevent = willRemove(el, oldvnode)
     const newel = make(newvnode)
-    if (el.parentNode) {
-        if (prevent) el.parentNode.insertBefore(newel, el)
-        else el.parentNode.replaceChild(newel, el)
-    }
+    willRemove(el, oldvnode)
+    el.parentNode && el.parentNode.replaceChild(newel, el)
     return newel
 }
 
@@ -132,7 +129,7 @@ function patchElement(el, oldattr, oldch, newattr, newch) {
 
 function willRemoveElement (el, {attributes, children}) {
     children.forEach((c, i) => willRemove(el.childNodes[i], c))
-    return attributes.onremove && attributes.onremove(el)
+    return attributes.onremove && attributes.onremove(el, el.parentNode)
 }
 
 //-----------------

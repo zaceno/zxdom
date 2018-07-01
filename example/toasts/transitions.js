@@ -97,8 +97,6 @@ function runExit (el, attr, css) {
     return true
 }
     
-function noop () {}
-    
 function composeHandlers (f1, f2) {
     if (!f1) return f2
     if (!f2) return f1
@@ -132,7 +130,12 @@ var _move = transitionComponent(function (attr) {
 })
 
 var _exit = transitionComponent(function (attr) {
-    return { onremove: function (el) { return runExit(el, attr, attr.css || {}) } }
+    return { onremove: function (el, parent) {
+        setTimeout(_ => {
+            parent.appendChild(el)
+            runExit(el, attr, attr.css || {})
+        }, 0)
+    }}
 })
 
 var Enter = transitionComponent(function (attr) {

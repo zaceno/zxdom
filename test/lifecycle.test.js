@@ -145,34 +145,3 @@ test('onremove called for children when parent is removed', t => {
     mount(component, container)
     update(component, {step: 1})
 })
-
-test('onremove returns true prevents removal but only for top removed', t => {
-    t.plan(3)
-    var unremoved
-    const component = define(({step}) => h('div', {}, [
-        [
-            h('p', {
-                id: 'foo',
-                onremove: el => {
-                    unremoved = el
-                    return true
-                },
-            }, [
-                h('span', {
-                    id: 'bar',
-                    onremove: el => t.is(el.id, 'bar'),
-                }),
-                h('span', {
-                    id: 'baz',
-                    onremove: el => t.is(el.id, 'baz'),
-                }),
-
-            ])
-        ],
-        []
-    ][step]), {step: 0})
-    const container = document.createElement('main')
-    mount(component, container)
-    update(component, {step: 1})
-    t.is(!!unremoved.parentNode, true)
-})
