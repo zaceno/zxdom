@@ -33,10 +33,7 @@ export default function ({onchange}) {
 
     const decorator = ({row, col}, children) => {
         const attr = children[0].attributes
-        attr.onupdate = el => {
-            if (inSelection(row, col)) el.classList.add(css.selected)
-            else el.classList.remove(css.selected)
-        }
+        if (inSelection(row, col)) attr.class = css.selected
         attr.onmousedown = ev => {
             ev.preventDefault(ev)
             selection = {
