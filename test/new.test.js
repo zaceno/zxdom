@@ -47,11 +47,10 @@ test('make sure old children and new children of component instances are separat
 
 
 test('replace a component with a regular tag as a child', t => {
-    t.plan(3)
-    const subcomponent = define(_ => h('p', {id: 'foo', onremove: el => {t.is(el.id, 'foo')}}, ['foo']))
+    const subcomponent = define(_ => h('p', {id: 'foo'}, ['foo']))
     const component = define(({step}) => h('div', {}, [
        h(subcomponent),
-       h('p', {id: 'bar', oncreate: el => {t.is(el.id, 'bar')}}, ['bar'])
+       h('p', {id: 'bar'}, ['bar'])
     ][step]), {step: 0})
     const container = document.createElement('main')
     mount(component, container)
@@ -60,11 +59,10 @@ test('replace a component with a regular tag as a child', t => {
 })
 
 test('replace a component with a regular tag as root of component', t => {
-    t.plan(3)
-    const subcomponent = define(_ => h('p', {id: 'foo', onremove: el => {t.is(el.id, 'foo')}}, ['foo']))
+    const subcomponent = define(_ => h('p', {id: 'foo'}, ['foo']))
     const component = define(({step}) => [
        h(subcomponent),
-       h('p', {id: 'bar', oncreate: el => {t.is(el.id, 'bar')}}, ['bar'])
+       h('p', {id: 'bar'}, ['bar'])
     ][step], {step: 0})
     const container = document.createElement('main')
     mount(component, container)
@@ -74,8 +72,7 @@ test('replace a component with a regular tag as root of component', t => {
 
 
 test('replace a component with a regular string as a child', t => {
-    t.plan(2)
-    const subcomponent = define(_ => h('p', {id: 'foo', onremove: el => {t.is(el.id, 'foo')}}, ['foo']))
+    const subcomponent = define(_ => h('p', {id: 'foo'}, ['foo']))
     const component = define(({step}) => h('div', {}, [
        h(subcomponent),
        'bop'
@@ -87,8 +84,7 @@ test('replace a component with a regular string as a child', t => {
 })
 
 test('replace a component with a regular string as root of component', t => {
-    t.plan(2)
-    const subcomponent = define(_ => h('p', {id: 'foo', onremove: el => {t.is(el.id, 'foo')}}, ['foo']))
+    const subcomponent = define(_ => h('p', {id: 'foo'}, ['foo']))
     const component = define(({step}) => [
        h(subcomponent),
        'bop'
@@ -100,10 +96,9 @@ test('replace a component with a regular string as root of component', t => {
 })
 
 test('replace a regular tag with a component', t => {
-    t.plan(4)
-    const subcomponent = define(_ => h('p', {id: 'foo', oncreate: el => t.is(el.id, 'foo')}, ['foo']))
+    const subcomponent = define(_ => h('p', {id: 'foo'}, ['foo']))
     const component = define(({step}) => [
-        h('p', {id: 'bar', onremove: el => t.is(el.id, 'bar')}, ['bar']),
+        h('p', {id: 'bar'}, ['bar']),
         h(subcomponent),
     ][step], {step: 0})
     const container = document.createElement('main')
@@ -114,8 +109,7 @@ test('replace a regular tag with a component', t => {
 })
 
 test('replace a string with a component', t => {
-    t.plan(3)
-    const subcomponent = define(_ => h('p', {id: 'foo', oncreate: el => t.is(el.id, 'foo')}, ['foo']))
+    const subcomponent = define(_ => h('p', {id: 'foo'}, ['foo']))
     const component = define(({step}) => [
         'bar',
         h(subcomponent),
@@ -127,7 +121,6 @@ test('replace a string with a component', t => {
     t.is(container.innerHTML, '<p id="foo">foo</p>')
 })
 
-/* TODO: components returned directly by other components, can be updated */
 test('components rendered by other component can be updated', t => {
     const first = _ => h('p', {id: 'biz'}, ['biz'])
     const inner = define(({val}) => h('p', {id: val}, [val]), {val: 'foo'})
@@ -141,18 +134,18 @@ test('components rendered by other component can be updated', t => {
 
 
 test('components should not be recreated when updated', t => {
-    t.plan(2)
-    const inner = define(({step}) => h('p', {
-        oncreate: _ => t.is(step, 1),
-        onupdate: _ => t.is(step, 2)
-    }, ['inner']))
+    const inner = define(({step}) => h('p', {id: 'inner'}, ['inner']))
     const outer = define(({step}) => h('div', {}, [
         h('p', {}, ['extra']),
         h(inner, {step}),
         h('p', {}, ['extra']),
     ]), {step: 1})
-    mount(outer, document.createElement('main'))
+    const container = document.createElement('main')
+    mount(outer, container)
+    .querySelector('#inner').created = true
     update(outer, {step: 2})
+    t.is(container.querySelector('#inner').created, true)
+
 })
 
 test('vnodes should be able to be null, empty string or false and be filtered out', t => {

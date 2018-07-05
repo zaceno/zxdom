@@ -1,3 +1,4 @@
+import './zx-transition'
 import {h, define} from '../../src/'
 import Writer from './writer'
 import Reciever from './toasts'
