@@ -5,12 +5,10 @@ import Model from './model'
 const ItemView = ({text, done, toggle, onremove, editing, edit, onsubmit}) => (
     <li
         ondblclick={_ => !editing && edit()}
-        onupdate={el => {
-            if (editing) el.classList.add(css.editing)
-            else el.classList.remove(css.editing)
-            if (done) el.classList.add(css.complete)
-            else el.classList.remove(css.complete)
-        }}
+        class={[
+            editing && css.editing,
+            done && css.complete
+        ].filter(c => c).join(' ')}
     >
         <div class={css.view}>
             <input
