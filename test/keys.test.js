@@ -7,110 +7,98 @@ global.document = dom.window.document
 const despace = str =>  str.replace(/\n\s*/g, '')
 
 test('add key makes node created', t => {
+    t.plan(2)
     const component = define(({step}) => [
         h('div', {
             id: 'foo',
+            onremove: el => t.is(el.id, 'foo')
         }, ['foo']),
         h('div', {
             id: 'bar',
             key: 'key',
+            oncreate: el => t.is(el.id, 'bar')
         }, ['bar'])
     ][step], {step: 0})
     const container = document.createElement('main')
     mount(component, container)
-    const firstEl = container.querySelector('#foo')
     update(component, {step: 1})
-    const secondEl = container.querySelector('#bar')
-    t.plan(1)
-    t.not(firstEl, secondEl)
 })
 
 test('add key makes node created - in child', t => {
+    t.plan(2)
     const component = define(({step}) => h('div', {}, [
         h('p', {
             id: 'foo',
+            onremove: el => t.is(el.id, 'foo')
         }, ['foo']),
         h('p', {
             id: 'bar',
             key: 'key',
+            oncreate: el => t.is(el.id, 'bar')
         }, ['bar'])
     ][step]), {step: 0})
     const container = document.createElement('main')
     mount(component, container)
-    const firstEl = container.querySelector('#foo')
     update(component, {step: 1})
-    const secondEl = container.querySelector('#bar')
-    t.plan(1)
-    t.not(firstEl, secondEl)
 })
 
 test('remove key makes node removed', t => {
+    t.plan(2)
     const component = define(({step}) => [
         h('div', {
             id: 'foo',
             key: 'key',
+            onremove: el => t.is(el.id, 'foo')
         }, ['foo']),
         h('div', {
             id: 'bar',
+            oncreate: el => t.is(el.id, 'bar')
         }, ['bar'])
     ][step], {step: 0})
     const container = document.createElement('main')
     mount(component, container)
-    const firstEl = container.querySelector('#foo')
     update(component, {step: 1})
-    const secondEl = container.querySelector('#bar')
-    t.plan(1)
-    t.not(firstEl, secondEl)
 })
 
 test('remove key makes node removed - in child', t => {
+    t.plan(2)
     const component = define(({step}) => h('div', {}, [
         h('p', {
             id: 'foo',
             key: 'key',
+            onremove: el => t.is(el.id, 'foo')
         }, ['foo']),
         h('p', {
             id: 'bar',
+            oncreate: el => t.is(el.id, 'bar')
         }, ['bar'])
     ][step]), {step: 0})
     const container = document.createElement('main')
     mount(component, container)
-    const firstEl = container.querySelector('#foo')
     update(component, {step: 1})
-    const secondEl = container.querySelector('#bar')
-    t.plan(1)
-    t.not(firstEl, secondEl)
 })
 
 test('keyed node moved, is updated with same element as before', t => {
+    t.plan(2)
     const component = define(({step}) => [
         h('div', {}, [
-            h('p', {key: 'foo', id: 'foo'}, []),
-            h('p', {key: 'bar', id: 'bar'}, [])
+            h('p', {key: 'foo', oncreate: el => el.id = 'foo'}, []),
+            h('p', {key: 'bar', oncreate: el => el.id = 'bar'}, [])
         ]),
         h('div', {}, [
-            h('p', {key: 'bar', id: 'bar'}, []),
-            h('p', {key: 'foo', id: 'foo'}, []),
+            h('p', {key: 'bar', onupdate: el => t.is(el.id, 'bar')}, []),
+            h('p', {key: 'foo', onupdate: el => t.is(el.id, 'foo')}, []),
         ])
     ][step], {step: 0})
     const container = document.createElement('main')
     mount(component, container)
-    var foo = container.querySelector('#foo')
-    var bar = container.querySelector('#bar')
-    foo.test = true
-    bar.test = true
     update(component, {step: 1})
-    foo = container.querySelector('#foo')
-    bar = container.querySelector('#bar')
-    t.plan(2)
-    t.is(foo.test, true)
-    t.is(foo.test, true)
 })
 
 test('keys reorder properly', t => {
     const keyed = ({key}) => h('p', {
         key: key,
-        id: key,
+        oncreate: el => {el.id = key},
     }, [key])
     const container = document.createElement('main')
     const main = define(({step}) => h('div', {}, [
@@ -145,7 +133,7 @@ test('keys reorder properly', t => {
 test('keys reorder properly among unkeyed with addition', t => {
     const keyed = ({key}) => h('p', {
         key: key,
-        id: key,
+        oncreate: el => {el.id = key},
     }, [key])
     const container = document.createElement('main')
     const main = define(({step}) => h('div', {}, [
@@ -191,7 +179,7 @@ test('keys reorder properly among unkeyed with addition', t => {
 test('keys reorder properly among unkeyed with removal', t => {
     const keyed = ({key}) => h('p', {
         key: key,
-        id: key,
+        oncreate: el => {el.id = key},
     }, [key])
     const container = document.createElement('main')
     const main = define(({step}) => h('div', {}, [
@@ -235,7 +223,7 @@ test('keys reorder properly among unkeyed with removal', t => {
 test('keys reorder properly among textnodes - with addition', t => {
     const keyed = ({key}) => h('p', {
         key: key,
-        id: key
+        oncreate: el => {el.id = key},
     }, [key])
     const container = document.createElement('main')
     const main = define(({step}) => h('div', {}, [
@@ -281,7 +269,7 @@ test('keys reorder properly among textnodes - with addition', t => {
 test('keys reorder properly among textnodes with removal', t => {
     const keyed = ({key}) => h('p', {
         key: key,
-        id: key,
+        oncreate: el => {el.id = key},
     }, [key])
     const container = document.createElement('main')
     const main = define(({step}) => h('div', {}, [
@@ -324,10 +312,13 @@ test('keys reorder properly among textnodes with removal', t => {
 
 
 
-test('keyed components reorder properly among unkeyed with removal', t => {
+test('keye components reorder properly among unkeyed with removal', t => {
+    t.plan(6)
     const makeComp = key => define(_ => h('p', {
         key,
         id: key,
+        oncreate: _ => t.pass(),
+        onremove: _ => t.pass(),
     }, [key]))
     const compA = makeComp('aaa')
     const compB = makeComp('bbb')

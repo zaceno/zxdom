@@ -24,6 +24,7 @@ function define (func, data) {
     return {func, data}
 }
 
+
 function update (view, data) {
     view.data = data
     view.instances = view.instances || [] //common pattern with makeInstance --> factor out
@@ -46,15 +47,28 @@ function patch (el, oldnode, newnode) {
             el = patchElement(el, oldnode.attributes, oldnode.children, newnode.attributes, newnode.children)
         }
     } else {
-        el = replace(el, newnode)
+        el = replace(el, oldnode, newnode)
     }
     return el
 }
 
-function replace (el, newvnode) {
+function remove(el, oldvnode) {
+    willRemove(el, oldvnode)
+    el.parentNode && el.parentNode.removeChild(el)
+    return true
+}
+
+function replace (el, oldvnode, newvnode) {
     const newel = make(newvnode)
+    willRemove(el, oldvnode)
     el.parentNode && el.parentNode.replaceChild(newel, el)
     return newel
+}
+
+function willRemove(el, oldvnode) {
+    if (!oldvnode.type) return false
+    if (oldvnode.type.func) return willRemoveInstance(el, oldvnode)
+    return willRemoveElement(el, oldvnode)
 }
 
 //-------------
@@ -73,11 +87,22 @@ function patchInstance (oldel, view, attributes, children) {
         return (attr && attr.key) ? attr.key : null 
     }
     const vnode = vnodeForView(view, attributes, children)
-    const inst = seekIndex(view.instances, inst => (inst.el === oldel))
+    const inst = getInstanceIndex(view, oldel)
     const oldvnode = view.instances[inst].vnode
-    const el = (getKey(oldvnode) === getKey(vnode)) ? patch(oldel, oldvnode, vnode) : replace(oldel, vnode)
+    const el = (getKey(oldvnode) === getKey(vnode) ? patch : replace)(oldel, oldvnode, vnode)
     view.instances.splice(inst, 1, {el, vnode, attributes, children})
     return el
+}
+
+function willRemoveInstance (el, {type}) {
+    const index = getInstanceIndex(type, el)
+    const instance = type.instances[index]
+    type.instances.splice(index, 1)
+    return willRemove(el, instance.vnode)
+}
+
+function getInstanceIndex(type, el) {
+    return seekIndex(type.instances, inst => (inst.el === el))
 }
 
 function vnodeForView(type, attributes, children) {
@@ -91,15 +116,21 @@ function makeElement ({type, attributes, children}, svg=false) {
     const el = svg ? document.createElementNS('http://www.w3.org/2000/svg', type) : document.createElement(type)
     updateAttributes(el, {}, attributes)
     children.forEach(chnode => el.appendChild(make(chnode, svg)))
+    attributes.oncreate && attributes.oncreate(el)
     return el
 }
 
 function patchElement(el, oldattr, oldch, newattr, newch) {
     updateAttributes(el, oldattr, newattr)
     patchChildren(el, oldch, newch)
+    newattr.onupdate && newattr.onupdate(el)
     return el
 }
 
+function willRemoveElement (el, {attributes, children}) {
+    children.forEach((c, i) => willRemove(el.childNodes[i], c))
+    return attributes.onremove && attributes.onremove(el, el.parentNode)
+}
 
 //-----------------
 
@@ -121,8 +152,9 @@ function patchChildren(parent, oldch, newch) {
         n++
     }
     while (n < oldch.length) {
-        parent.removeChild(parent.childNodes[n])
-        oldch.splice(n, 1)
+        const didRemove = remove(parent.childNodes[n], oldch[n])
+        if (!didRemove) n++
+        else oldch.splice(n, 1)
     }
     while (n < newch.length)  parent.appendChild(make(newch[n++]))
 }
