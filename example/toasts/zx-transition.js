@@ -50,18 +50,14 @@ const transitions = (_ => {
     function enter(el, runclass, entryclass) {
         const onend = () => {
             el.removeEventListener('transitionend', onend)
-            console.log('REMOVING RUNCLASS')
             el.classList.remove(runclass)
         }
         el.addEventListener('transitionend', onend)
 
         positionTracker.start(el)
-        console.log('ADDING ENTRYCLASS', entryclass)
         el.classList.add(entryclass)
         requestAnimationFrame(_ => {
             requestAnimationFrame(_ => {
-                console.log('REMOVING ENTRYCLASS')
-                console.log('ADDING RUNCLASS')
                 el.classList.add(runclass)
                 el.classList.remove(entryclass)
             })
