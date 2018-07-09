@@ -10,6 +10,7 @@ const examples = [
     { url: '#select',  title: 'Selectable Grid', module: import('./select')},
     { url: '#form',    title: 'Dynamic form',    module: import('./form')},
     { url: '#custel',  title: 'Custom Elements', module: import('./custel')},
+    { url: '#chart',   title: 'Chart.js integration', module: import('./chart')},
 ]
 const ExampleMenu = _ => (
     <ul>{examples.map(x => (
